@@ -8,6 +8,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Optional;
+
 import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest
@@ -29,4 +31,38 @@ public class UserIntegrationTest {
         assertThat(savedUser.getUsername()).isEqualTo("new_user");
         assertThat(savedUser.getEmail()).isEqualTo("new_user@example.com");
     }
+
+    @Test
+    void updateUserInUserTable() {
+        User newUser = new User();
+        newUser.setUsername("AlesNovak");
+        newUser.setEmail("novakal@example.com");
+
+        User savedUser = userRepository.save(newUser);
+        assertThat(savedUser).isNotNull();
+        assertThat(savedUser.getId()).isNotNull();
+
+        savedUser.setUsername("OndrejStibor");
+        savedUser.setEmail("nojor@gmail.com");
+        User updatedUser = userRepository.save(savedUser);
+
+        assertThat(updatedUser.getUsername()).isEqualTo("OndrejStibor");
+        assertThat(updatedUser.getEmail()).isEqualTo("nojor@gmail.com");
+    }
+
+    @Test
+    void removeUserFromUserTable() {
+        User newUser = new User();
+        newUser.setUsername("new_user");
+        newUser.setEmail("new_user@example.com");
+
+        User savedUser = userRepository.save(newUser);
+        assertThat(savedUser).isNotNull();
+        assertThat(savedUser.getId()).isNotNull();
+
+        userRepository.delete(savedUser);
+        Optional<User> deletedUser = userRepository.findById(savedUser.getId());
+        assertThat(deletedUser).isEmpty();
+    }
+
 }
