@@ -1,0 +1,31 @@
+#version: '3.8'
+#
+#services:
+#  postgres-db:
+#    image: postgres:latest
+#    container_name: local_postgres
+#    environment:
+#      POSTGRES_USER: postgres
+#      POSTGRES_PASSWORD: mysecretpassword
+#      POSTGRES_DB: postgres
+#    ports:
+#      - "5432:5432"
+#    volumes:
+#      - ./data:/var/lib/postgresql/data
+#    restart: always
+
+
+version: "3.8"
+services:
+  db:
+    image: postgres:latest
+    container_name: carrent_postgres
+    environment:
+      POSTGRES_DB: carrent_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./data:/var/lib/postgresql/data
+      - ./init-db.sql:/docker-entrypoint-initdb.d/init-db.sql  # Run SQL script at first startup
