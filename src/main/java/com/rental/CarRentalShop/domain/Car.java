@@ -6,6 +6,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.math.BigDecimal;
 import java.util.Set;
 
 @Entity
@@ -17,23 +18,23 @@ import java.util.Set;
 public class Car {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "CarID")
+    @Column(name = "carid")
     private Long id;
 
-    @Column(name = "Make")
+    @Column(name = "make")
     private String make;
 
-    @Column(name = "Model")
+    @Column(name = "model")
     private String model;
 
-    @Column(name = "Year")
+    @Column(name = "year")
     private Integer year;
 
-    @Column(name = "RegistrationNumber", unique = true)
+    @Column(name = "registrationnumber", unique = true)
     private String registrationNumber;
 
-    @Column(name = "RentalPrice")
-    private Double rentalPrice;
+    @Column(name = "rentalprice", precision = 10, scale = 2)
+    private BigDecimal rentalPrice;
 
     @OneToMany(mappedBy = "car", cascade = CascadeType.ALL)
     private Set<Rental> rentals;

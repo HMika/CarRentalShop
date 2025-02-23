@@ -4,6 +4,8 @@ import com.rental.CarRentalShop.domain.Car;
 import com.rental.CarRentalShop.dto.CarDTO;
 import org.springframework.stereotype.Component;
 
+import java.math.BigDecimal;
+
 @Component
 public class CarMapper {
     public CarDTO toDTO(Car car) {
@@ -15,7 +17,7 @@ public class CarMapper {
                 .model(car.getModel())
                 .year(car.getYear())
                 .registrationNumber(car.getRegistrationNumber())
-                .rentalPrice(car.getRentalPrice())
+                .rentalPrice(BigDecimal.valueOf(car.getRentalPrice().doubleValue()))
                 .build();
     }
 
@@ -28,7 +30,7 @@ public class CarMapper {
                 .model(carDTO.getModel())
                 .year(carDTO.getYear())
                 .registrationNumber(carDTO.getRegistrationNumber())
-                .rentalPrice(carDTO.getRentalPrice())
+                .rentalPrice(BigDecimal.valueOf(carDTO.getRentalPrice().doubleValue()))
                 .build();
     }
 }

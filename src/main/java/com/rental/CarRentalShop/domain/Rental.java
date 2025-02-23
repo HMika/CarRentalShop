@@ -6,7 +6,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.util.Date;
+import java.time.LocalDate;
 
 @Entity
 @Data
@@ -18,23 +18,23 @@ public class Rental {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "RentalID")
+    @Column(name = "rentalid")
     private Long id;
 
     @ManyToOne
-    @JoinColumn(name = "UserID", nullable = false)
+    @JoinColumn(name = "userid", nullable = false)
     private User user;
 
     @ManyToOne
-    @JoinColumn(name = "CarID", nullable = false)
+    @JoinColumn(name = "carid", nullable = false)
     private Car car;
 
-    @Column(name = "StartDate")
-    private Date startDate;
+    @Column(name = "startdate")
+    private LocalDate startDate;
 
-    @Column(name = "EndDate")
-    private Date endDate;
+    @Column(name = "enddate")
+    private LocalDate endDate;
 
-    @Column(name = "IsPaid")
+    @Column(name = "ispaid")
     private Boolean isPaid;
 }

@@ -58,6 +58,11 @@
 			<artifactId>mapstruct</artifactId>
 			<version>1.6.2</version>
 		</dependency>
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<scope>test</scope>
+		</dependency>
 		<!--		<dependency>-->
 <!--			<groupId>com.h2database</groupId>-->
 <!--			<artifactId>h2</artifactId>-->
