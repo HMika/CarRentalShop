@@ -66,7 +66,7 @@ public class UserServiceIntegrationTest {
 //        UserDTO savedUser = userService.createUser(userDTO);
 //        userService.deleteUser(savedUser.getId());
 //        List<UserDTO> users = userService.getAllUsers();
-//        assertThat(users).isEmpty();
+//        assertThat(users).isNull();
 //    }
 //
 //    @Test
