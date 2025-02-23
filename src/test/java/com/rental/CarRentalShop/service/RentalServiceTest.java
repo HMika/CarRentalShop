@@ -120,7 +120,7 @@ class RentalServiceTest {
 
     @Test
     void shouldDeleteRental() {
-        when(rentalRepository.existsById(1L)).thenReturn(true);
+        when(rentalRepository.findById(1L)).thenReturn(Optional.of(rental));
 
         rentalService.deleteRental(1L);
 
@@ -129,7 +129,7 @@ class RentalServiceTest {
 
     @Test
     void shouldThrowExceptionWhenDeletingNonExistingRental() {
-        when(rentalRepository.existsById(99L)).thenReturn(false);
+        when(rentalRepository.findById(99L)).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> rentalService.deleteRental(99L))
                 .isInstanceOf(IllegalArgumentException.class)
