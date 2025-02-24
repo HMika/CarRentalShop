@@ -5,12 +5,14 @@ import com.rental.CarRentalShop.dto.CarDTO;
 import com.rental.CarRentalShop.exception.car.CarDeletionException;
 import com.rental.CarRentalShop.exception.car.CarNotFoundException;
 import com.rental.CarRentalShop.exception.car.DuplicateCarException;
+import com.rental.CarRentalShop.exception.car.InvalidCarDataException;
 import com.rental.CarRentalShop.mapper.CarMapper;
 import com.rental.CarRentalShop.repository.CarRepository;
 import jakarta.transaction.Transactional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.dao.DataAccessException;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -46,14 +48,19 @@ public class CarService {
     public CarDTO createCar(CarDTO carDTO) {
         logger.info("Creating a new car: {}", carDTO);
 
-        if (carRepository.existsById(carDTO.getId())) {
-            throw new DuplicateCarException(carDTO.getRegistrationNumber());
+        if (carDTO.getRegistrationNumber() == null || carDTO.getRegistrationNumber().isBlank()) {
+            throw new InvalidCarDataException("Car registration number cannot be empty.");
         }
 
-        Car car = carMapper.toEntity(carDTO);
-        Car savedCar = carRepository.save(car);
-        logger.debug("Car successfully created with ID: {}", savedCar.getId());
-        return carMapper.toDTO(savedCar);
+        try {
+            Car car = carMapper.toEntity(carDTO);
+            Car savedCar = carRepository.save(car);
+            logger.debug("Car successfully created with ID: {}", savedCar.getId());
+            return carMapper.toDTO(savedCar);
+        } catch (DataIntegrityViolationException e) {
+            logger.error("Duplicate registration number: {}", carDTO.getRegistrationNumber());
+            throw new DuplicateCarException("Car with registration number " + carDTO.getRegistrationNumber() + " already exists.");
+        }
     }
 
     @Transactional

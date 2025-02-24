@@ -2,6 +2,8 @@ package com.rental.CarRentalShop.integrations;
 
 import com.rental.CarRentalShop.domain.Car;
 import com.rental.CarRentalShop.dto.CarDTO;
+import com.rental.CarRentalShop.exception.car.CarNotFoundException;
+import com.rental.CarRentalShop.exception.car.DuplicateCarException;
 import com.rental.CarRentalShop.repository.CarRepository;
 import com.rental.CarRentalShop.service.CarService;
 import jakarta.transaction.Transactional;
@@ -43,7 +45,7 @@ public class CarServiceIntegrationTest {
     void shouldCreateAndRetrieveCar() {
         // 1. Create Car
         CarDTO savedCar = carService.createCar(carDTO);
-        assertNotNull(savedCar.getId());
+        assertNotNull(savedCar.getId()); // Ensure ID is assigned after saving
         assertEquals("Toyota", savedCar.getMake());
 
         // 2. Retrieve the same car from DB
@@ -79,6 +81,30 @@ public class CarServiceIntegrationTest {
     }
 
     @Test
+    void shouldThrowException_WhenCreatingDuplicateCar() {
+        // 1. Create Car
+        carService.createCar(carDTO);
+
+        // 2. Try to create a duplicate car
+        assertThrows(DuplicateCarException.class, () -> carService.createCar(carDTO));
+    }
+
+    @Test
+    void shouldThrowException_WhenUpdatingNonExistentCar() {
+        // Attempt to update a car that does not exist
+        CarDTO updatedCarDTO = CarDTO.builder()
+                .id(999L) // Non-existent ID
+                .make("Ford")
+                .model("Focus")
+                .year(2023)
+                .registrationNumber("NON-EXISTENT")
+                .rentalPrice(BigDecimal.valueOf(70.00))
+                .build();
+
+        assertThrows(CarNotFoundException.class, () -> carService.updateCar(999L, updatedCarDTO));
+    }
+
+    @Test
     void shouldDeleteCar() {
         // 1. Create Car
         CarDTO savedCar = carService.createCar(carDTO);
@@ -90,5 +116,11 @@ public class CarServiceIntegrationTest {
         // 3. Verify deletion
         Optional<Car> deletedCar = carRepository.findById(savedCar.getId());
         assertFalse(deletedCar.isPresent());
+    }
+
+    @Test
+    void shouldThrowException_WhenDeletingNonExistentCar() {
+        // Attempt to delete a car that does not exist
+        assertThrows(CarNotFoundException.class, () -> carService.deleteCar(999L));
     }
 }
