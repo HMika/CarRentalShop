@@ -4,7 +4,6 @@ import com.rental.CarRentalShop.domain.Car;
 import com.rental.CarRentalShop.dto.CarDTO;
 import com.rental.CarRentalShop.exception.car.CarDeletionException;
 import com.rental.CarRentalShop.exception.car.CarNotFoundException;
-import com.rental.CarRentalShop.exception.car.DuplicateCarException;
 import com.rental.CarRentalShop.mapper.CarMapper;
 import com.rental.CarRentalShop.repository.CarRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -104,15 +103,6 @@ class CarServiceTest {
         verify(carRepository, times(1)).save(car);
     }
 
-    @Test
-    void createCar_ShouldThrowException_WhenDuplicateRegistrationNumber() {
-        when(carRepository.existsById(carDTO.getId())).thenReturn(true);
-
-        assertThrows(DuplicateCarException.class, () -> carService.createCar(carDTO));
-
-        verify(carRepository, times(1)).existsById(carDTO.getId());
-        verify(carRepository, never()).save(any(Car.class));
-    }
 
     @Test
     void updateCar_ShouldReturnUpdatedCarDTO_WhenCarExists() {

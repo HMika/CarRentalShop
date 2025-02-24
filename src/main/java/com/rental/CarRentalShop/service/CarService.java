@@ -52,6 +52,11 @@ public class CarService {
             throw new InvalidCarDataException("Car registration number cannot be empty.");
         }
 
+        if (carRepository.existsByRegistrationNumber(carDTO.getRegistrationNumber())) {
+            logger.error("Duplicate registration number: {}", carDTO.getRegistrationNumber());
+            throw new DuplicateCarException("Car with registration number " + carDTO.getRegistrationNumber() + " already exists.");
+        }
+
         try {
             Car car = carMapper.toEntity(carDTO);
             Car savedCar = carRepository.save(car);
