@@ -126,11 +126,30 @@ class CarServiceTest {
     }
 
     @Test
-    void deleteCar_ShouldCallRepositoryDeleteById() {
+    void deleteCar_ShouldCallDeleteById_WhenCarExists() {
+        // Arrange
+        when(carRepository.existsById(1L)).thenReturn(true);
         doNothing().when(carRepository).deleteById(1L);
 
+        // Act
         carService.deleteCar(1L);
 
+        // Assert
+        verify(carRepository, times(1)).existsById(1L);
         verify(carRepository, times(1)).deleteById(1L);
     }
+
+    @Test
+    void deleteCar_ShouldNotCallDeleteById_WhenCarDoesNotExist() {
+        // Arrange
+        when(carRepository.existsById(2L)).thenReturn(false);
+
+        // Act
+        carService.deleteCar(2L);
+
+        // Assert
+        verify(carRepository, times(1)).existsById(2L);
+        verify(carRepository, never()).deleteById(anyLong());
+    }
+
 }
