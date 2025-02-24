@@ -2,6 +2,9 @@ package com.rental.CarRentalShop.service;
 
 import com.rental.CarRentalShop.domain.Car;
 import com.rental.CarRentalShop.dto.CarDTO;
+import com.rental.CarRentalShop.exception.car.CarDeletionException;
+import com.rental.CarRentalShop.exception.car.CarNotFoundException;
+import com.rental.CarRentalShop.exception.car.DuplicateCarException;
 import com.rental.CarRentalShop.mapper.CarMapper;
 import com.rental.CarRentalShop.repository.CarRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -10,6 +13,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.dao.DataAccessException;
 
 import java.math.BigDecimal;
 import java.util.Arrays;
@@ -67,7 +71,7 @@ class CarServiceTest {
     }
 
     @Test
-    void getCarById_ShouldReturnCarDTO() {
+    void getCarById_ShouldReturnCarDTO_WhenCarExists() {
         when(carRepository.findById(1L)).thenReturn(Optional.of(car));
         when(carMapper.toDTO(car)).thenReturn(carDTO);
 
@@ -79,12 +83,11 @@ class CarServiceTest {
     }
 
     @Test
-    void getCarById_ShouldReturnNull_WhenCarNotFound() {
+    void getCarById_ShouldThrowException_WhenCarNotFound() {
         when(carRepository.findById(2L)).thenReturn(Optional.empty());
 
-        CarDTO foundCar = carService.getCarById(2L);
+        assertThrows(CarNotFoundException.class, () -> carService.getCarById(2L));
 
-        assertNull(foundCar);
         verify(carRepository, times(1)).findById(2L);
     }
 
@@ -102,9 +105,18 @@ class CarServiceTest {
     }
 
     @Test
+    void createCar_ShouldThrowException_WhenDuplicateRegistrationNumber() {
+        when(carRepository.existsById(carDTO.getId())).thenReturn(true);
+
+        assertThrows(DuplicateCarException.class, () -> carService.createCar(carDTO));
+
+        verify(carRepository, times(1)).existsById(carDTO.getId());
+        verify(carRepository, never()).save(any(Car.class));
+    }
+
+    @Test
     void updateCar_ShouldReturnUpdatedCarDTO_WhenCarExists() {
-        when(carRepository.existsById(1L)).thenReturn(true);
-        when(carMapper.toEntity(carDTO)).thenReturn(car);
+        when(carRepository.findById(1L)).thenReturn(Optional.of(car));
         when(carRepository.save(car)).thenReturn(car);
         when(carMapper.toDTO(car)).thenReturn(carDTO);
 
@@ -116,40 +128,45 @@ class CarServiceTest {
     }
 
     @Test
-    void updateCar_ShouldReturnNull_WhenCarDoesNotExist() {
-        when(carRepository.existsById(2L)).thenReturn(false);
+    void updateCar_ShouldThrowException_WhenCarDoesNotExist() {
+        when(carRepository.findById(2L)).thenReturn(Optional.empty());
 
-        CarDTO updatedCar = carService.updateCar(2L, carDTO);
+        assertThrows(CarNotFoundException.class, () -> carService.updateCar(2L, carDTO));
 
-        assertNull(updatedCar);
+        verify(carRepository, times(1)).findById(2L);
         verify(carRepository, never()).save(any(Car.class));
     }
 
     @Test
     void deleteCar_ShouldCallDeleteById_WhenCarExists() {
-        // Arrange
         when(carRepository.existsById(1L)).thenReturn(true);
         doNothing().when(carRepository).deleteById(1L);
 
-        // Act
         carService.deleteCar(1L);
 
-        // Assert
         verify(carRepository, times(1)).existsById(1L);
         verify(carRepository, times(1)).deleteById(1L);
     }
 
     @Test
-    void deleteCar_ShouldNotCallDeleteById_WhenCarDoesNotExist() {
-        // Arrange
+    void deleteCar_ShouldThrowException_WhenCarDoesNotExist() {
         when(carRepository.existsById(2L)).thenReturn(false);
 
-        // Act
-        carService.deleteCar(2L);
+        assertThrows(CarNotFoundException.class, () -> carService.deleteCar(2L));
 
-        // Assert
         verify(carRepository, times(1)).existsById(2L);
         verify(carRepository, never()).deleteById(anyLong());
     }
 
+    @Test
+    void deleteCar_ShouldThrowCarDeletionException_OnDatabaseError() {
+        when(carRepository.existsById(1L)).thenReturn(true);
+        doThrow(new DataAccessException("Database error") {
+        }).when(carRepository).deleteById(1L);
+
+        assertThrows(CarDeletionException.class, () -> carService.deleteCar(1L));
+
+        verify(carRepository, times(1)).existsById(1L);
+        verify(carRepository, times(1)).deleteById(1L);
+    }
 }
