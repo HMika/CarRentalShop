@@ -49,10 +49,6 @@ public class UserService {
                     return new UserNotFoundException(id);
                 });
 
-        if (user.getRentals() != null) {
-            user.getRentals().size(); // Force initialization if needed
-        }
-
         logger.info("User found: {}", user.getUsername());
         return userMapper.toDTO(user);
     }
@@ -85,22 +81,22 @@ public class UserService {
     }
 
     public UserDTO updateUser(Long id, UserDTO userDTO) {
-        logger.info("Updating user with ID: {}", id);
+        logger.info("Updating existingUser with ID: {}", id);
 
-        User user = userRepository.findById(id)
+        User existingUser = userRepository.findById(id)
                 .orElseThrow(() -> {
                     logger.error("User with ID {} not found, cannot update", id);
                     return new UserNotFoundException(id);
                 });
 
-        user.setUsername(userDTO.getUsername());
-        user.setName(userDTO.getName());
-        user.setSurname(userDTO.getSurname());
-        user.setContactInfo(userDTO.getContactInfo());
-        user.setPassword(userDTO.getPassword());
-        user.setRole(roleMapper.toEntity(userDTO.getRole()));
+        existingUser.setUsername(userDTO.getUsername());
+        existingUser.setName(userDTO.getName());
+        existingUser.setSurname(userDTO.getSurname());
+        existingUser.setContactInfo(userDTO.getContactInfo());
+        existingUser.setPassword(userDTO.getPassword());
+        existingUser.setRole(roleMapper.toEntity(userDTO.getRole()));
 
-        User updatedUser = userRepository.save(user);
+        User updatedUser = userRepository.save(existingUser);
         logger.info("User with ID {} updated successfully", id);
         return userMapper.toDTO(updatedUser);
     }
