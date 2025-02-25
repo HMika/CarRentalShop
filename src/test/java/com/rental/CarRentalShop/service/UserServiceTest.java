@@ -2,6 +2,8 @@ package com.rental.CarRentalShop.service;
 
 import com.rental.CarRentalShop.domain.User;
 import com.rental.CarRentalShop.dto.UserDTO;
+import com.rental.CarRentalShop.exception.user.UserAlreadyExistsException;
+import com.rental.CarRentalShop.exception.user.UserNotFoundException;
 import com.rental.CarRentalShop.mapper.RoleMapper;
 import com.rental.CarRentalShop.mapper.UserMapper;
 import com.rental.CarRentalShop.repository.UserRepository;
@@ -88,8 +90,8 @@ public class UserServiceTest {
         when(userRepository.findById(99L)).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> userService.getUserById(99L))
-                .isInstanceOf(IllegalArgumentException.class)
-                .hasMessage("User not found with ID: 99");
+                .isInstanceOf(UserNotFoundException.class)
+                .hasMessage("User with ID 99 not found.");
     }
 
     @Test
@@ -109,12 +111,13 @@ public class UserServiceTest {
         when(userRepository.findByUsername("unknownuser")).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> userService.getUserByUsername("unknownuser"))
-                .isInstanceOf(IllegalArgumentException.class)
-                .hasMessage("User not found with username: unknownuser");
+                .isInstanceOf(UserNotFoundException.class)
+                .hasMessage("User with username 'unknownuser' not found.");
     }
 
     @Test
     void shouldCreateUser() {
+        when(userRepository.findByUsername("testuser")).thenReturn(Optional.empty()); // Ensure user does not exist
         when(userMapper.toEntity(userDTO)).thenReturn(user);
         when(userRepository.save(user)).thenReturn(user);
         when(userMapper.toDTO(user)).thenReturn(userDTO);
@@ -124,6 +127,15 @@ public class UserServiceTest {
         assertThat(result).isNotNull();
         assertThat(result.getId()).isEqualTo(1L);
         verify(userRepository, times(1)).save(user);
+    }
+
+    @Test
+    void shouldThrowExceptionWhenCreatingDuplicateUser() {
+        when(userRepository.findByUsername("testuser")).thenReturn(Optional.of(user));
+
+        assertThatThrownBy(() -> userService.createUser(userDTO))
+                .isInstanceOf(UserAlreadyExistsException.class)
+                .hasMessage("User with username 'testuser' already exists.");
     }
 
     @Test
@@ -145,8 +157,8 @@ public class UserServiceTest {
         when(userRepository.findById(99L)).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> userService.updateUser(99L, userDTO))
-                .isInstanceOf(IllegalArgumentException.class)
-                .hasMessage("User not found with ID: 99");
+                .isInstanceOf(UserNotFoundException.class)
+                .hasMessage("User with ID 99 not found.");
     }
 
     @Test
@@ -163,7 +175,7 @@ public class UserServiceTest {
         when(userRepository.existsById(99L)).thenReturn(false);
 
         assertThatThrownBy(() -> userService.deleteUser(99L))
-                .isInstanceOf(IllegalArgumentException.class)
-                .hasMessage("User not found with ID: 99");
+                .isInstanceOf(UserNotFoundException.class)
+                .hasMessage("User with ID 99 not found.");
     }
 }
