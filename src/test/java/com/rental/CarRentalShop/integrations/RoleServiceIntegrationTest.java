@@ -1,6 +1,7 @@
 package com.rental.CarRentalShop.integrations;
 
 import com.rental.CarRentalShop.dto.RoleDTO;
+import com.rental.CarRentalShop.exception.rental.RoleNotFoundException;
 import com.rental.CarRentalShop.service.RoleService;
 import jakarta.transaction.Transactional;
 import org.junit.jupiter.api.Order;
@@ -12,6 +13,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import java.util.List;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @SpringBootTest
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
@@ -75,9 +77,8 @@ public class RoleServiceIntegrationTest {
 
         // When
         roleService.deleteRole(roleId);
-        RoleDTO deletedRole = roleService.getRoleById(roleId);
 
-        // Then
-        assertThat(deletedRole).isNull();
+        // Then - Expect `RoleNotFoundException`
+        assertThrows(RoleNotFoundException.class, () -> roleService.getRoleById(roleId));
     }
 }
