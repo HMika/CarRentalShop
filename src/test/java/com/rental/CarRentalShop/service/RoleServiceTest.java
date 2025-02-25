@@ -68,9 +68,7 @@ public class RoleServiceTest {
     void getRoleById_ShouldThrowException_WhenRoleNotFound() {
         when(roleRepository.findById(4L)).thenReturn(Optional.empty());
 
-        RoleNotFoundException exception = assertThrows(RoleNotFoundException.class, () -> {
-            roleService.getRoleById(4L);
-        });
+        RoleNotFoundException exception = assertThrows(RoleNotFoundException.class, () -> roleService.getRoleById(4L));
 
         assertEquals("Role with ID 4 not found.", exception.getMessage());
         verify(roleRepository, times(1)).findById(4L);
@@ -94,9 +92,7 @@ public class RoleServiceTest {
     void createRole_ShouldThrowException_WhenRoleAlreadyExists() {
         when(roleRepository.findAll()).thenReturn(Arrays.asList(role)); // Role already exists
 
-        RoleAlreadyExistsException exception = assertThrows(RoleAlreadyExistsException.class, () -> {
-            roleService.createRole(roleDTO);
-        });
+        RoleAlreadyExistsException exception = assertThrows(RoleAlreadyExistsException.class, () -> roleService.createRole(roleDTO));
 
         assertEquals("Role with name 'Manager' already exists.", exception.getMessage());
         verify(roleRepository, never()).save(any(Role.class));
@@ -120,9 +116,7 @@ public class RoleServiceTest {
     void updateRole_ShouldThrowException_WhenRoleDoesNotExist() {
         when(roleRepository.existsById(4L)).thenReturn(false);
 
-        RoleNotFoundException exception = assertThrows(RoleNotFoundException.class, () -> {
-            roleService.updateRole(4L, roleDTO);
-        });
+        RoleNotFoundException exception = assertThrows(RoleNotFoundException.class, () -> roleService.updateRole(4L, roleDTO));
 
         assertEquals("Role with ID 4 not found.", exception.getMessage());
         verify(roleRepository, never()).save(any(Role.class));
@@ -142,9 +136,7 @@ public class RoleServiceTest {
     void deleteRole_ShouldThrowException_WhenRoleDoesNotExist() {
         when(roleRepository.existsById(4L)).thenReturn(false);
 
-        RoleNotFoundException exception = assertThrows(RoleNotFoundException.class, () -> {
-            roleService.deleteRole(4L);
-        });
+        RoleNotFoundException exception = assertThrows(RoleNotFoundException.class, () -> roleService.deleteRole(4L));
 
         assertEquals("Role with ID 4 not found.", exception.getMessage());
         verify(roleRepository, never()).deleteById(anyLong());
