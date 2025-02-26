@@ -15,7 +15,6 @@ public interface RentalRepository extends JpaRepository<Rental, Long> {
 
     List<Rental> findByCarId(Long carId);
 
-    // Finds any rentals for a given car that intersect [startDate, endDate]
     @Query("""
                 SELECT r 
                   FROM Rental r 
@@ -26,16 +25,4 @@ public interface RentalRepository extends JpaRepository<Rental, Long> {
     List<Rental> findOverlappingRentalsForCar(@Param("carId") Long carId,
                                               @Param("startDate") LocalDate startDate,
                                               @Param("endDate") LocalDate endDate);
-
-    // Ensuring user can't double-book any car:
-    @Query("""
-                SELECT r 
-                  FROM Rental r 
-                 WHERE r.user.id = :userId
-                   AND r.startDate <= :endDate
-                   AND r.endDate   >= :startDate
-            """)
-    List<Rental> findOverlappingRentalsForUser(@Param("userId") Long userId,
-                                               @Param("startDate") LocalDate startDate,
-                                               @Param("endDate") LocalDate endDate);
 }

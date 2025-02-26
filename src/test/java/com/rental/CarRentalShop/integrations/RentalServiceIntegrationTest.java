@@ -76,12 +76,10 @@ public class RentalServiceIntegrationTest {
                 .isPaid(true)
                 .build();
 
-        // Create rental
         RentalDTO createdRental = rentalService.createRental(rentalDTO);
         assertThat(createdRental).isNotNull();
         assertThat(createdRental.getId()).isNotNull();
 
-        // Retrieve rental
         RentalDTO fetchedRental = rentalService.getRentalById(createdRental.getId());
         assertThat(fetchedRental).isNotNull();
         assertThat(fetchedRental.getUser().getId()).isEqualTo(userDTO.getId());
@@ -105,11 +103,9 @@ public class RentalServiceIntegrationTest {
                 .build();
         rentalRepository.save(rental);
 
-        // Convert to DTO for update
         RentalDTO toUpdate = rentalMapper.toDTO(rental);
         toUpdate.setEndDate(LocalDate.of(2024, 3, 10));
 
-        // Perform update
         RentalDTO updatedRental = rentalService.updateRental(rental.getId(), toUpdate);
         assertThat(updatedRental).isNotNull();
         assertThat(updatedRental.getEndDate()).isEqualTo(LocalDate.of(2024, 3, 10));
@@ -132,10 +128,8 @@ public class RentalServiceIntegrationTest {
                 .build();
         rentalRepository.save(rental);
 
-        // Delete rental
         rentalService.deleteRental(rental.getId());
 
-        // Verify deletion
         Optional<Rental> deleted = rentalRepository.findById(rental.getId());
         assertThat(deleted).isEmpty();
     }
@@ -166,7 +160,6 @@ public class RentalServiceIntegrationTest {
                 .build();
         rentalRepository.save(rental2);
 
-        // Fetch by user ID
         List<RentalDTO> userRentals = rentalService.getRentalsByUser(existingUser.getId());
         assertThat(userRentals).hasSize(3);
     }
@@ -183,7 +176,7 @@ public class RentalServiceIntegrationTest {
                 .user(userMapper.toDTO(existingUser))
                 .car(carMapper.toDTO(existingCar))
                 .startDate(LocalDate.of(2025, 1, 10))
-                .endDate(LocalDate.of(2025, 1, 1)) // end is before start
+                .endDate(LocalDate.of(2025, 1, 1))
                 .isPaid(false)
                 .build();
 
@@ -223,5 +216,38 @@ public class RentalServiceIntegrationTest {
         assertThatThrownBy(() -> rentalService.createRental(overlappingDTO))
                 .isInstanceOf(RentalCreationException.class)
                 .hasMessageContaining("Car is not available");
+    }
+
+    @Test
+    @Order(7)
+    void shouldThrowRentalCreationExceptionWhenUpdateRental() {
+        User existingUser = userRepository.findById(2L)
+                .orElseThrow(() -> new RuntimeException("User with ID=2 not found"));
+        Car existingCar = carRepository.findById(3L)
+                .orElseThrow(() -> new RuntimeException("Car with ID=3 not found"));
+
+        RentalDTO rentalDTO = RentalDTO.builder()
+                .user(userMapper.toDTO(existingUser))
+                .car(carMapper.toDTO(existingCar))
+                .startDate(LocalDate.of(2024, 3, 1))
+                .endDate(LocalDate.of(2024, 3, 5))
+                .isPaid(true)
+                .build();
+        RentalDTO createdRental = rentalService.createRental(rentalDTO);
+
+        RentalDTO secondRentalDTO = RentalDTO.builder()
+                .user(userMapper.toDTO(existingUser))
+                .car(carMapper.toDTO(existingCar))
+                .startDate(LocalDate.of(2024, 3, 6))
+                .endDate(LocalDate.of(2024, 3, 10))
+                .isPaid(false)
+                .build();
+        rentalService.createRental(secondRentalDTO);
+
+        createdRental.setEndDate(LocalDate.of(2024, 3, 7)); // overlap
+
+        assertThatThrownBy(() -> rentalService.updateRental(createdRental.getId(), createdRental))
+                .isInstanceOf(RentalCreationException.class)
+                .hasMessageContaining("Car is not available for the selected dates");
     }
 }

@@ -14,6 +14,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 @Service
@@ -35,6 +37,13 @@ public class RentalService {
         this.rentalMapper = rentalMapper;
         this.userMapper = userMapper;
         this.carMapper = carMapper;
+    }
+
+    private static <T> void setIfNotNull(Supplier<T> getter, Consumer<T> setter) {
+        T value = getter.get();
+        if (value != null) {
+            setter.accept(value);
+        }
     }
 
     /**
@@ -89,27 +98,21 @@ public class RentalService {
     public RentalDTO updateRental(Long id, RentalDTO rentalDTO) {
         logger.info("Updating rental with ID: {}", id);
 
-        Rental existingRental = rentalRepository.findById(id)
-                .orElseThrow(() -> {
-                    logger.error("Rental with ID {} not found, cannot update", id);
-                    return new RentalNotFoundException(id);
-                });
+        Rental existing = rentalRepository.findById(id)
+                .orElseThrow(() -> new RentalNotFoundException(id));
 
-        // Update fields
-        existingRental.setStartDate(rentalDTO.getStartDate());
-        existingRental.setEndDate(rentalDTO.getEndDate());
-        existingRental.setIsPaid(rentalDTO.getIsPaid());
+        setIfNotNull(rentalDTO::getUser, user -> existing.setUser(userMapper.toEntity(user)));
+        setIfNotNull(rentalDTO::getCar, car -> existing.setCar(carMapper.toEntity(car)));
+        setIfNotNull(rentalDTO::getStartDate, existing::setStartDate);
+        setIfNotNull(rentalDTO::getEndDate, existing::setEndDate);
+        setIfNotNull(rentalDTO::getIsPaid, existing::setIsPaid);
 
-        if (rentalDTO.getUser() != null) {
-            existingRental.setUser(userMapper.toEntity(rentalDTO.getUser()));
-        }
-        if (rentalDTO.getCar() != null) {
-            existingRental.setCar(carMapper.toEntity(rentalDTO.getCar()));
-        }
+        RentalDTO updatedDTO = rentalMapper.toDTO(existing);
+        validateNewRental(updatedDTO);
 
-        Rental updatedRental = rentalRepository.save(existingRental);
+        Rental updated = rentalRepository.save(existing);
         logger.info("Rental with ID {} updated successfully", id);
-        return rentalMapper.toDTO(updatedRental);
+        return rentalMapper.toDTO(updated);
     }
 
     /**
@@ -155,7 +158,6 @@ public class RentalService {
     }
 
     private void validateNewRental(RentalDTO rentalDTO) {
-
         if (rentalDTO.getStartDate() == null || rentalDTO.getEndDate() == null) {
             logger.error("StartDate or EndDate is null");
             throw new RentalCreationException("Rental dates cannot be null");
@@ -172,11 +174,17 @@ public class RentalService {
                 rentalDTO.getStartDate(),
                 rentalDTO.getEndDate()
         );
+
+        if (rentalDTO.getId() != null) {
+            overlappingCarRentals.removeIf(r -> r.getId().equals(rentalDTO.getId()));
+        }
+
         if (!overlappingCarRentals.isEmpty()) {
             logger.error("Car with ID {} is not available between {} and {}",
                     carId, rentalDTO.getStartDate(), rentalDTO.getEndDate());
             throw new RentalCreationException("Car is not available for the selected dates.");
         }
+
         logger.info("Validation passed for rental: car={}, {} -> {}",
                 carId, rentalDTO.getStartDate(), rentalDTO.getEndDate());
     }
