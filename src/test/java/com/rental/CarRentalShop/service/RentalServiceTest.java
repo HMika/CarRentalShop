@@ -1,7 +1,9 @@
 package com.rental.CarRentalShop.service;
 
 import com.rental.CarRentalShop.domain.Rental;
+import com.rental.CarRentalShop.dto.CarDTO;
 import com.rental.CarRentalShop.dto.RentalDTO;
+import com.rental.CarRentalShop.exception.rental.RentalCreationException;
 import com.rental.CarRentalShop.exception.rental.RentalNotFoundException;
 import com.rental.CarRentalShop.mapper.RentalMapper;
 import com.rental.CarRentalShop.repository.RentalRepository;
@@ -87,6 +89,10 @@ class RentalServiceTest {
 
     @Test
     void shouldCreateRental() {
+        rentalDTO.setCar(CarDTO.builder().id(10L).build());
+        rentalDTO.setStartDate(LocalDate.of(2024, 3, 1));
+        rentalDTO.setEndDate(LocalDate.of(2024, 3, 5));
+
         when(rentalMapper.toEntity(rentalDTO)).thenReturn(rental);
         when(rentalRepository.save(rental)).thenReturn(rental);
         when(rentalMapper.toDTO(rental)).thenReturn(rentalDTO);
@@ -158,5 +164,35 @@ class RentalServiceTest {
 
         assertThat(result).hasSize(1);
         verify(rentalRepository, times(1)).findByCarId(1L);
+    }
+
+    @Test
+    void shouldThrowExceptionWhenStartDateIsAfterEndDate() {
+        RentalDTO invalidDateRentalDTO = RentalDTO.builder()
+                .startDate(LocalDate.of(2024, 3, 10))
+                .endDate(LocalDate.of(2024, 3, 1))
+                .build();
+
+        assertThatThrownBy(() -> rentalService.createRental(invalidDateRentalDTO))
+                .isInstanceOf(RentalCreationException.class)
+                .hasMessageContaining("Invalid date range");
+    }
+
+    @Test
+    void shouldThrowExceptionWhenCarIsNotAvailable() {
+        rentalDTO.setStartDate(LocalDate.of(2024, 3, 1));
+        rentalDTO.setEndDate(LocalDate.of(2024, 3, 5));
+
+
+        CarDTO carDTO = CarDTO.builder().id(1L).build();
+        rentalDTO.setCar(carDTO);
+
+        Rental overlappingRental = new Rental();
+        when(rentalRepository.findOverlappingRentalsForCar(eq(1L), any(LocalDate.class), any(LocalDate.class)))
+                .thenReturn(List.of(overlappingRental));
+
+        assertThatThrownBy(() -> rentalService.createRental(rentalDTO))
+                .isInstanceOf(RentalCreationException.class)
+                .hasMessageContaining("Car is not available");
     }
 }

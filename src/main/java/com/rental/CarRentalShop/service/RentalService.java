@@ -69,6 +69,9 @@ public class RentalService {
      */
     public RentalDTO createRental(RentalDTO rentalDTO) {
         logger.info("Creating a new rental");
+
+        validateNewRental(rentalDTO);
+
         try {
             Rental rentalEntity = rentalMapper.toEntity(rentalDTO);
             Rental savedRental = rentalRepository.save(rentalEntity);
@@ -149,5 +152,32 @@ public class RentalService {
                 .collect(Collectors.toList());
         logger.info("Found {} rentals for car ID: {}", rentals.size(), carId);
         return rentals;
+    }
+
+    private void validateNewRental(RentalDTO rentalDTO) {
+
+        if (rentalDTO.getStartDate() == null || rentalDTO.getEndDate() == null) {
+            logger.error("StartDate or EndDate is null");
+            throw new RentalCreationException("Rental dates cannot be null");
+        }
+        if (rentalDTO.getStartDate().isAfter(rentalDTO.getEndDate())) {
+            logger.error("StartDate {} is after EndDate {}",
+                    rentalDTO.getStartDate(), rentalDTO.getEndDate());
+            throw new RentalCreationException("Invalid date range: start date is after end date.");
+        }
+
+        Long carId = rentalDTO.getCar().getId();
+        List<Rental> overlappingCarRentals = rentalRepository.findOverlappingRentalsForCar(
+                carId,
+                rentalDTO.getStartDate(),
+                rentalDTO.getEndDate()
+        );
+        if (!overlappingCarRentals.isEmpty()) {
+            logger.error("Car with ID {} is not available between {} and {}",
+                    carId, rentalDTO.getStartDate(), rentalDTO.getEndDate());
+            throw new RentalCreationException("Car is not available for the selected dates.");
+        }
+        logger.info("Validation passed for rental: car={}, {} -> {}",
+                carId, rentalDTO.getStartDate(), rentalDTO.getEndDate());
     }
 }

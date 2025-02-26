@@ -6,6 +6,7 @@ import com.rental.CarRentalShop.domain.User;
 import com.rental.CarRentalShop.dto.CarDTO;
 import com.rental.CarRentalShop.dto.RentalDTO;
 import com.rental.CarRentalShop.dto.UserDTO;
+import com.rental.CarRentalShop.exception.rental.RentalCreationException;
 import com.rental.CarRentalShop.mapper.CarMapper;
 import com.rental.CarRentalShop.mapper.RentalMapper;
 import com.rental.CarRentalShop.mapper.UserMapper;
@@ -27,6 +28,7 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 
 
 @SpringBootTest
@@ -167,5 +169,59 @@ public class RentalServiceIntegrationTest {
         // Fetch by user ID
         List<RentalDTO> userRentals = rentalService.getRentalsByUser(existingUser.getId());
         assertThat(userRentals).hasSize(3);
+    }
+
+    @Test
+    @Order(5)
+    void shouldFailWhenStartDateIsAfterEndDate() {
+        User existingUser = userRepository.findById(2L)
+                .orElseThrow(() -> new RuntimeException("User with ID=2 not found"));
+        Car existingCar = carRepository.findById(3L)
+                .orElseThrow(() -> new RuntimeException("Car with ID=3 not found"));
+
+        RentalDTO invalidDates = RentalDTO.builder()
+                .user(userMapper.toDTO(existingUser))
+                .car(carMapper.toDTO(existingCar))
+                .startDate(LocalDate.of(2025, 1, 10))
+                .endDate(LocalDate.of(2025, 1, 1)) // end is before start
+                .isPaid(false)
+                .build();
+
+        assertThatThrownBy(() -> rentalService.createRental(invalidDates))
+                .isInstanceOf(RentalCreationException.class)
+                .hasMessageContaining("Invalid date range");
+    }
+
+    @Test
+    @Order(6)
+    void shouldFailWhenCarIsAlreadyRented() {
+        User existingUser = userRepository.findById(2L)
+                .orElseThrow(() -> new RuntimeException("User with ID=2 not found"));
+        Car existingCar = carRepository.findById(3L)
+                .orElseThrow(() -> new RuntimeException("Car with ID=3 not found"));
+
+        // First rental: 2024-03-01 to 2024-03-05
+        Rental existingRental = Rental.builder()
+                .user(existingUser)
+                .car(existingCar)
+                .startDate(LocalDate.of(2024, 3, 1))
+                .endDate(LocalDate.of(2024, 3, 5))
+                .isPaid(true)
+                .build();
+        rentalRepository.save(existingRental);
+
+        // Attempt new rental that overlaps partially with the first
+        RentalDTO overlappingDTO = RentalDTO.builder()
+                .user(userMapper.toDTO(existingUser))
+                .car(carMapper.toDTO(existingCar))
+                .startDate(LocalDate.of(2024, 3, 3)) // Overlaps
+                .endDate(LocalDate.of(2024, 3, 6))
+                .isPaid(false)
+                .build();
+
+        // Expecting a car unavailable exception
+        assertThatThrownBy(() -> rentalService.createRental(overlappingDTO))
+                .isInstanceOf(RentalCreationException.class)
+                .hasMessageContaining("Car is not available");
     }
 }

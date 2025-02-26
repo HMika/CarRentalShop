@@ -32,10 +32,10 @@ public class Rental {
     @EqualsAndHashCode.Exclude
     private Car car;
 
-    @Column(name = "startdate")
+    @Column(name = "startdate", nullable = false)
     private LocalDate startDate;
 
-    @Column(name = "enddate")
+    @Column(name = "enddate", nullable = false)
     private LocalDate endDate;
 
     @Column(name = "ispaid")
