@@ -2,7 +2,7 @@ package com.rental.CarRentalShop.service;
 
 import com.rental.CarRentalShop.domain.Rental;
 import com.rental.CarRentalShop.dto.RentalDTO;
-import com.rental.CarRentalShop.exception.role.RentalNotFoundException;
+import com.rental.CarRentalShop.exception.rental.RentalNotFoundException;
 import com.rental.CarRentalShop.mapper.RentalMapper;
 import com.rental.CarRentalShop.repository.RentalRepository;
 import org.junit.jupiter.api.BeforeEach;

@@ -45,7 +45,7 @@ public class CarServiceIntegrationTest {
     void shouldCreateAndRetrieveCar() {
         // 1. Create Car
         CarDTO savedCar = carService.createCar(carDTO);
-        assertNotNull(savedCar.getId()); // Ensure ID is assigned after saving
+        assertNotNull(savedCar.getId());
         assertEquals("Toyota", savedCar.getMake());
 
         // 2. Retrieve the same car from DB
@@ -91,7 +91,6 @@ public class CarServiceIntegrationTest {
 
     @Test
     void shouldThrowException_WhenUpdatingNonExistentCar() {
-        // Attempt to update a car that does not exist
         CarDTO updatedCarDTO = CarDTO.builder()
                 .id(999L) // Non-existent ID
                 .make("Ford")
@@ -106,21 +105,17 @@ public class CarServiceIntegrationTest {
 
     @Test
     void shouldDeleteCar() {
-        // 1. Create Car
         CarDTO savedCar = carService.createCar(carDTO);
         assertNotNull(savedCar.getId());
 
-        // 2. Delete Car
         carService.deleteCar(savedCar.getId());
 
-        // 3. Verify deletion
         Optional<Car> deletedCar = carRepository.findById(savedCar.getId());
         assertFalse(deletedCar.isPresent());
     }
 
     @Test
     void shouldThrowException_WhenDeletingNonExistentCar() {
-        // Attempt to delete a car that does not exist
         assertThrows(CarNotFoundException.class, () -> carService.deleteCar(999L));
     }
 }

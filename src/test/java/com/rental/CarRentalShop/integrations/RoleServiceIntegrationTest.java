@@ -1,7 +1,7 @@
 package com.rental.CarRentalShop.integrations;
 
 import com.rental.CarRentalShop.dto.RoleDTO;
-import com.rental.CarRentalShop.exception.rental.RoleNotFoundException;
+import com.rental.CarRentalShop.exception.role.RoleNotFoundException;
 import com.rental.CarRentalShop.service.RoleService;
 import jakarta.transaction.Transactional;
 import org.junit.jupiter.api.Order;

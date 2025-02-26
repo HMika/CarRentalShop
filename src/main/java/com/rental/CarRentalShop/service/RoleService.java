@@ -2,8 +2,8 @@ package com.rental.CarRentalShop.service;
 
 import com.rental.CarRentalShop.domain.Role;
 import com.rental.CarRentalShop.dto.RoleDTO;
-import com.rental.CarRentalShop.exception.rental.RoleAlreadyExistsException;
-import com.rental.CarRentalShop.exception.rental.RoleNotFoundException;
+import com.rental.CarRentalShop.exception.role.RoleAlreadyExistsException;
+import com.rental.CarRentalShop.exception.role.RoleNotFoundException;
 import com.rental.CarRentalShop.mapper.RoleMapper;
 import com.rental.CarRentalShop.repository.RoleRepository;
 import org.slf4j.Logger;

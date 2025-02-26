@@ -1,4 +1,4 @@
-package com.rental.CarRentalShop.exception.rental;
+package com.rental.CarRentalShop.exception.role;
 
 public class RoleNotFoundException extends RuntimeException {
     public RoleNotFoundException(Long id) {
