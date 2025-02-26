@@ -2,6 +2,7 @@ package com.rental.CarRentalShop.service;
 
 import com.rental.CarRentalShop.domain.Rental;
 import com.rental.CarRentalShop.dto.RentalDTO;
+import com.rental.CarRentalShop.exception.role.RentalNotFoundException;
 import com.rental.CarRentalShop.mapper.RentalMapper;
 import com.rental.CarRentalShop.repository.RentalRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -21,6 +22,7 @@ import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class RentalServiceTest {
+
     @Mock
     private RentalRepository rentalRepository;
 
@@ -79,7 +81,7 @@ class RentalServiceTest {
         when(rentalRepository.findById(99L)).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> rentalService.getRentalById(99L))
-                .isInstanceOf(IllegalArgumentException.class)
+                .isInstanceOf(RentalNotFoundException.class)
                 .hasMessage("Rental not found with ID: 99");
     }
 
@@ -114,7 +116,7 @@ class RentalServiceTest {
         when(rentalRepository.findById(99L)).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> rentalService.updateRental(99L, rentalDTO))
-                .isInstanceOf(IllegalArgumentException.class)
+                .isInstanceOf(RentalNotFoundException.class)
                 .hasMessage("Rental not found with ID: 99");
     }
 
@@ -132,7 +134,7 @@ class RentalServiceTest {
         when(rentalRepository.findById(99L)).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> rentalService.deleteRental(99L))
-                .isInstanceOf(IllegalArgumentException.class)
+                .isInstanceOf(RentalNotFoundException.class)
                 .hasMessage("Rental not found with ID: 99");
     }
 

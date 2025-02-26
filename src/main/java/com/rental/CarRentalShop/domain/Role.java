@@ -24,5 +24,6 @@ public class Role {
 
     @OneToMany(mappedBy = "role", cascade = CascadeType.ALL)
     @EqualsAndHashCode.Exclude // avoid infinite loop
+    @ToString.Exclude
     private Set<User> users;
 }

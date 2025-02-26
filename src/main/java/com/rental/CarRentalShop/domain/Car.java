@@ -1,10 +1,7 @@
 package com.rental.CarRentalShop.domain;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.math.BigDecimal;
 import java.util.Set;
@@ -15,10 +12,12 @@ import java.util.Set;
 @NoArgsConstructor
 @Builder
 @Table(name = "cars")
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
 public class Car {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "carid")
+    @EqualsAndHashCode.Include
     private Long id;
 
     @Column(name = "make")
@@ -37,5 +36,7 @@ public class Car {
     private BigDecimal rentalPrice;
 
     @OneToMany(mappedBy = "car", cascade = CascadeType.ALL)
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
     private Set<Rental> rentals;
 }

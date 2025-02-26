@@ -2,24 +2,26 @@ package com.rental.CarRentalShop.integrations;
 
 import com.rental.CarRentalShop.domain.Car;
 import com.rental.CarRentalShop.domain.Rental;
-import com.rental.CarRentalShop.domain.Role;
 import com.rental.CarRentalShop.domain.User;
+import com.rental.CarRentalShop.dto.CarDTO;
 import com.rental.CarRentalShop.dto.RentalDTO;
+import com.rental.CarRentalShop.dto.UserDTO;
 import com.rental.CarRentalShop.mapper.CarMapper;
 import com.rental.CarRentalShop.mapper.RentalMapper;
 import com.rental.CarRentalShop.mapper.UserMapper;
 import com.rental.CarRentalShop.repository.CarRepository;
 import com.rental.CarRentalShop.repository.RentalRepository;
-import com.rental.CarRentalShop.repository.RoleRepository;
 import com.rental.CarRentalShop.repository.UserRepository;
 import com.rental.CarRentalShop.service.RentalService;
 import jakarta.transaction.Transactional;
-import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.MethodOrderer;
+import org.junit.jupiter.api.Order;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestMethodOrder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.annotation.DirtiesContext;
 
-import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
@@ -32,8 +34,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 @Transactional
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 public class RentalServiceIntegrationTest {
-    @Autowired
-    private RoleRepository roleRepository;
 
     @Autowired
     private RentalService rentalService;
@@ -56,41 +56,19 @@ public class RentalServiceIntegrationTest {
     @Autowired
     private CarMapper carMapper;
 
-    private User testUser;
-    private Car testCar;
-
-    @BeforeEach
-    void setUp() {
-        Role userRole = roleRepository.findByRoleName("User")
-                .orElseThrow(() -> new RuntimeException("Role 'User' not found!"));
-
-        testUser = User.builder()
-                .username("john_doe_test")
-                .password("securepass")
-                .name("John")
-                .surname("Doe")
-                .contactInfo("john.doe.test@example.com")
-                .role(userRole)
-                .build();
-        userRepository.save(testUser);
-
-        testCar = Car.builder()
-                .make("Toyota")
-                .model("Corolla")
-                .year(2020)
-                .registrationNumber("TEST-123") // Unique
-                .rentalPrice(BigDecimal.valueOf(50.00))
-                .build();
-        carRepository.save(testCar);
-    }
-
-
     @Test
     @Order(1)
     void shouldCreateAndRetrieveRental() {
+        User existingUser = userRepository.findById(2L)
+                .orElseThrow(() -> new RuntimeException("User with ID=2 not found"));
+        Car existingCar = carRepository.findById(3L)
+                .orElseThrow(() -> new RuntimeException("Car with ID=3 not found"));
+        UserDTO userDTO = userMapper.toDTO(existingUser);
+        CarDTO carDTO = carMapper.toDTO(existingCar);
+
         RentalDTO rentalDTO = RentalDTO.builder()
-                .user(userMapper.toDTO(testUser))
-                .car(carMapper.toDTO(testCar))
+                .user(userDTO)
+                .car(carDTO)
                 .startDate(LocalDate.of(2024, 3, 1))
                 .endDate(LocalDate.of(2024, 3, 7))
                 .isPaid(true)
@@ -104,17 +82,21 @@ public class RentalServiceIntegrationTest {
         // Retrieve rental
         RentalDTO fetchedRental = rentalService.getRentalById(createdRental.getId());
         assertThat(fetchedRental).isNotNull();
-        assertThat(fetchedRental.getUser().getId()).isEqualTo(testUser.getId());
-        assertThat(fetchedRental.getCar().getId()).isEqualTo(testCar.getId());
+        assertThat(fetchedRental.getUser().getId()).isEqualTo(userDTO.getId());
+        assertThat(fetchedRental.getCar().getId()).isEqualTo(carDTO.getId());
     }
 
     @Test
     @Order(2)
     void shouldUpdateRental() {
-        // Create & save initial Rental entity
+        User existingUser = userRepository.findById(2L)
+                .orElseThrow(() -> new RuntimeException("User with ID=2 not found"));
+        Car existingCar = carRepository.findById(3L)
+                .orElseThrow(() -> new RuntimeException("Car with ID=3 not found"));
+
         Rental rental = Rental.builder()
-                .user(testUser)
-                .car(testCar)
+                .user(existingUser)
+                .car(existingCar)
                 .startDate(LocalDate.of(2024, 3, 1))
                 .endDate(LocalDate.of(2024, 3, 7))
                 .isPaid(true)
@@ -134,10 +116,14 @@ public class RentalServiceIntegrationTest {
     @Test
     @Order(3)
     void shouldDeleteRental() {
-        // Create & save initial Rental entity
+        User existingUser = userRepository.findById(2L)
+                .orElseThrow(() -> new RuntimeException("User with ID=2 not found"));
+        Car existingCar = carRepository.findById(3L)
+                .orElseThrow(() -> new RuntimeException("Car with ID=3 not found"));
+
         Rental rental = Rental.builder()
-                .user(testUser)
-                .car(testCar)
+                .user(existingUser)
+                .car(existingCar)
                 .startDate(LocalDate.of(2024, 3, 1))
                 .endDate(LocalDate.of(2024, 3, 7))
                 .isPaid(true)
@@ -155,10 +141,14 @@ public class RentalServiceIntegrationTest {
     @Test
     @Order(4)
     void shouldRetrieveRentalsByUser() {
-        // Create & save multiple rentals for the same user
+        User existingUser = userRepository.findById(2L)
+                .orElseThrow(() -> new RuntimeException("User with ID=2 not found"));
+        Car existingCar = carRepository.findById(3L)
+                .orElseThrow(() -> new RuntimeException("Car with ID=3 not found"));
+
         Rental rental1 = Rental.builder()
-                .user(testUser)
-                .car(testCar)
+                .user(existingUser)
+                .car(existingCar)
                 .startDate(LocalDate.of(2024, 3, 1))
                 .endDate(LocalDate.of(2024, 3, 7))
                 .isPaid(true)
@@ -166,8 +156,8 @@ public class RentalServiceIntegrationTest {
         rentalRepository.save(rental1);
 
         Rental rental2 = Rental.builder()
-                .user(testUser)
-                .car(testCar)
+                .user(existingUser)
+                .car(existingCar)
                 .startDate(LocalDate.of(2024, 3, 10))
                 .endDate(LocalDate.of(2024, 3, 15))
                 .isPaid(false)
@@ -175,7 +165,7 @@ public class RentalServiceIntegrationTest {
         rentalRepository.save(rental2);
 
         // Fetch by user ID
-        List<RentalDTO> userRentals = rentalService.getRentalsByUser(testUser.getId());
-        assertThat(userRentals).hasSize(2);
+        List<RentalDTO> userRentals = rentalService.getRentalsByUser(existingUser.getId());
+        assertThat(userRentals).hasSize(3);
     }
 }

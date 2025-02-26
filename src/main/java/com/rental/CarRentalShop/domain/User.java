@@ -16,6 +16,7 @@ public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "userid")
+    @EqualsAndHashCode.Include
     private Long id;
 
     @Column(name = "username", nullable = false, unique = true)
@@ -35,10 +36,12 @@ public class User {
 
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "roleid", nullable = false)
-    @EqualsAndHashCode.Exclude // avoid infinite loop
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
     private Role role;
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @EqualsAndHashCode.Exclude // avoid infinite loop
+    @ToString.Exclude
     private Set<Rental> rentals;
 }

@@ -30,9 +30,9 @@ public class UserMapper {
                 .contactInfo(user.getContactInfo())
                 .password(user.getPassword())
                 .role(roleMapper.toDTO(user.getRole()))
-                .rentals(user.getRentals() != null
-                        ? user.getRentals().stream().map(rentalMapper::toDTO).collect(Collectors.toList())
-                        : null)
+//                .rentals(user.getRentals() != null
+//                        ? user.getRentals().stream().map(rentalMapper::toDTO).collect(Collectors.toList())
+//                        : null)
                 .build();
     }
 

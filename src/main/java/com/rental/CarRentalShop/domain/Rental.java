@@ -1,10 +1,7 @@
 package com.rental.CarRentalShop.domain;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.time.LocalDate;
 
@@ -14,19 +11,25 @@ import java.time.LocalDate;
 @NoArgsConstructor
 @Builder
 @Table(name = "rentals")
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
 public class Rental {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "rentalid")
+    @EqualsAndHashCode.Include
     private Long id;
 
     @ManyToOne
     @JoinColumn(name = "userid", nullable = false)
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
     private User user;
 
     @ManyToOne
     @JoinColumn(name = "carid", nullable = false)
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
     private Car car;
 
     @Column(name = "startdate")
