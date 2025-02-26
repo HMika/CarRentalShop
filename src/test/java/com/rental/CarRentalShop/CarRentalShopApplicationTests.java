@@ -28,5 +28,4 @@ class CarRentalShopApplicationTests {
 		Integer result = jdbcTemplate.queryForObject("SELECT 1", Integer.class);
 		assertThat(result).isEqualTo(1);
 	}
-
 }
