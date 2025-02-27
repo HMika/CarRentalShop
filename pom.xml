@@ -28,12 +28,16 @@
     </scm>
     <properties>
         <java.version>17</java.version>
+        <jacoco.version>0.8.12</jacoco.version>
+        <sonar.java.coveragePlugin>jacoco</sonar.java.coveragePlugin>
+        <sonar.dynamicAnalysis>reuseReports</sonar.dynamicAnalysis>
+        <sonar.language>java</sonar.language>
         <sonar.projectKey>CarRentalShop</sonar.projectKey>
         <sonar.host.url>http://localhost:9000</sonar.host.url>
-        <sonar.login>admin</sonar.login>
-        <sonar.password>sonar</sonar.password>
-        <sonar.language>java</sonar.language>
-        <!--mvn clean verify sonar:sonar -Dsonar.token=sqp_22e19aa0fef268ed8c7fdf912e8ce285db0f0c9f-->
+        <sonar.login>sqp_061237730e779f82d14550d2fadd3549861787ee</sonar.login>
+        <sonar.sources>src/main/java</sonar.sources>
+        <sonar.tests>src/test</sonar.tests>
+        <sonar.jacoco.reportPath>${project.basedir}/target/jacoco.exec</sonar.jacoco.reportPath>
     </properties>
     <dependencies>
         <dependency>
@@ -75,6 +79,11 @@
             <version>3.24.2</version>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>org.jacoco</groupId>
+            <artifactId>jacoco-maven-plugin</artifactId>
+            <version>0.8.11</version>
+        </dependency>
         <!--		<dependency>-->
         <!--			<groupId>com.h2database</groupId>-->
         <!--			<artifactId>h2</artifactId>-->
@@ -84,6 +93,26 @@
 
     <build>
         <plugins>
+            <plugin>
+                <groupId>org.jacoco</groupId>
+                <artifactId>jacoco-maven-plugin</artifactId>
+                <version>${jacoco.version}</version>
+                <executions>
+                    <execution>
+                        <id>jacoco-initialize</id>
+                        <goals>
+                            <goal>prepare-agent</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>jacoco-site</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>report</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
