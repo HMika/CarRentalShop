@@ -35,12 +35,13 @@ CREATE TABLE Cars
 
 CREATE TABLE Rentals
 (
-    RentalID  BIGSERIAL PRIMARY KEY,
-    UserID    BIGINT  NOT NULL,
-    CarID     BIGINT  NOT NULL,
-    StartDate DATE    NOT NULL,
-    EndDate   DATE    NOT NULL,
-    IsPaid    BOOLEAN NOT NULL DEFAULT FALSE,
+    RentalID   BIGSERIAL PRIMARY KEY,
+    UserID     BIGINT         NOT NULL,
+    CarID      BIGINT         NOT NULL,
+    StartDate  DATE           NOT NULL,
+    EndDate    DATE           NOT NULL,
+    IsPaid     BOOLEAN        NOT NULL DEFAULT FALSE,
+    TotalPrice NUMERIC(10, 2) NOT NULL DEFAULT 0.00, -- New Column Added
     FOREIGN KEY (UserID) REFERENCES Users (UserID) ON DELETE CASCADE,
     FOREIGN KEY (CarID) REFERENCES Cars (CarID) ON DELETE CASCADE
 );
@@ -63,9 +64,9 @@ VALUES ('Toyota', 'Corolla', 2020, 'ABC123', 50.00),
        ('BMW', 'X5', 2022, 'JKL012', 120.00),
        ('Tesla', 'Model 3', 2023, 'MNO345', 90.00);
 
-INSERT INTO Rentals (UserID, CarID, StartDate, EndDate, IsPaid)
-VALUES (1, 1, '2024-02-01', '2024-02-05', TRUE),
-       (2, 3, '2024-02-10', '2024-02-15', FALSE),
-       (3, 4, '2024-03-01', '2024-03-07', TRUE),
-       (4, 2, '2024-03-05', '2024-03-10', FALSE),
-       (5, 5, '2024-03-15', '2024-03-20', TRUE);
+INSERT INTO Rentals (UserID, CarID, StartDate, EndDate, IsPaid, TotalPrice)
+VALUES (1, 1, '2024-02-01', '2024-02-05', TRUE, 200.00),  -- 4 days × $50.00
+       (2, 3, '2024-02-10', '2024-02-15', FALSE, 300.00), -- 5 days × $60.00
+       (3, 4, '2024-03-01', '2024-03-07', TRUE, 720.00),  -- 6 days × $120.00
+       (4, 2, '2024-03-05', '2024-03-10', FALSE, 275.00), -- 5 days × $55.00
+       (5, 5, '2024-03-15', '2024-03-20', TRUE, 450.00); -- 5 days × $90.00

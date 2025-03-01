@@ -3,6 +3,7 @@ package com.rental.CarRentalShop.domain;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 
 @Entity
@@ -40,4 +41,7 @@ public class Rental {
 
     @Column(name = "ispaid")
     private Boolean isPaid;
+
+    @Column(name = "totalprice", nullable = false)
+    private BigDecimal totalPrice;
 }

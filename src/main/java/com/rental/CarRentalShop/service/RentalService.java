@@ -1,18 +1,26 @@
 package com.rental.CarRentalShop.service;
 
+import com.rental.CarRentalShop.domain.Car;
 import com.rental.CarRentalShop.domain.Rental;
+import com.rental.CarRentalShop.domain.User;
 import com.rental.CarRentalShop.dto.RentalDTO;
+import com.rental.CarRentalShop.exception.car.CarNotFoundException;
 import com.rental.CarRentalShop.exception.rental.RentalCreationException;
 import com.rental.CarRentalShop.exception.rental.RentalNotFoundException;
+import com.rental.CarRentalShop.exception.user.UserNotFoundException;
 import com.rental.CarRentalShop.mapper.CarMapper;
 import com.rental.CarRentalShop.mapper.RentalMapper;
 import com.rental.CarRentalShop.mapper.UserMapper;
+import com.rental.CarRentalShop.repository.CarRepository;
 import com.rental.CarRentalShop.repository.RentalRepository;
+import com.rental.CarRentalShop.repository.UserRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
@@ -27,17 +35,25 @@ public class RentalService {
     private final RentalMapper rentalMapper;
     private final UserMapper userMapper;
     private final CarMapper carMapper;
+    private final CarRepository carRepository;
+
+    private final UserRepository userRepository;
 
     @Autowired
     public RentalService(RentalRepository rentalRepository,
                          RentalMapper rentalMapper,
                          UserMapper userMapper,
-                         CarMapper carMapper) {
+                         CarMapper carMapper,
+                         CarRepository carRepository,
+                         UserRepository userRepository) {
         this.rentalRepository = rentalRepository;
         this.rentalMapper = rentalMapper;
         this.userMapper = userMapper;
         this.carMapper = carMapper;
+        this.carRepository = carRepository;
+        this.userRepository = userRepository;
     }
+
 
     private static <T> void setIfNotNull(Supplier<T> getter, Consumer<T> setter) {
         T value = getter.get();
@@ -76,15 +92,37 @@ public class RentalService {
     /**
      * Create a new rental.
      */
+
     public RentalDTO createRental(RentalDTO rentalDTO) {
         logger.info("Creating a new rental");
 
         validateNewRental(rentalDTO);
 
         try {
+            Car car = carRepository.findById(rentalDTO.getCar().getId())
+                    .orElseThrow(() -> new CarNotFoundException(rentalDTO.getCar().getId()));
+            rentalDTO.setCar(carMapper.toDTO(car));
+
+            User user = userRepository.findById(rentalDTO.getUser().getId())
+                    .orElseThrow(() -> new UserNotFoundException(rentalDTO.getUser().getId()));
+            rentalDTO.setUser(userMapper.toDTO(user));
+
+            logger.info("Fetched Car: ID={}, Rental Price={}", car.getId(), car.getRentalPrice());
+            logger.info("Fetched User: ID={}", user.getId());
+
+            long rentalDays = ChronoUnit.DAYS.between(rentalDTO.getStartDate(), rentalDTO.getEndDate());
+            if (rentalDays <= 0) {
+                throw new RentalCreationException("Rental period must be at least 1 day.");
+            }
+
+            BigDecimal totalPrice = car.getRentalPrice().multiply(BigDecimal.valueOf(rentalDays));
+            rentalDTO.setTotalPrice(totalPrice);
+
             Rental rentalEntity = rentalMapper.toEntity(rentalDTO);
+            rentalEntity.setTotalPrice(totalPrice);
+
             Rental savedRental = rentalRepository.save(rentalEntity);
-            logger.info("Successfully created rental with ID: {}", savedRental.getId());
+            logger.info("Successfully created rental with ID: {} and total price: {}", savedRental.getId(), totalPrice);
             return rentalMapper.toDTO(savedRental);
         } catch (Exception ex) {
             logger.error("Failed to create rental: {}", ex.getMessage());
@@ -101,14 +139,45 @@ public class RentalService {
         Rental existing = rentalRepository.findById(id)
                 .orElseThrow(() -> new RentalNotFoundException(id));
 
-        setIfNotNull(rentalDTO::getUser, user -> existing.setUser(userMapper.toEntity(user)));
-        setIfNotNull(rentalDTO::getCar, car -> existing.setCar(carMapper.toEntity(car)));
-        setIfNotNull(rentalDTO::getStartDate, existing::setStartDate);
-        setIfNotNull(rentalDTO::getEndDate, existing::setEndDate);
+        boolean needsPriceRecalculation = false;
+
+        if (rentalDTO.getUser() != null && rentalDTO.getUser().getId() != null) {
+            User user = userRepository.findById(rentalDTO.getUser().getId())
+                    .orElseThrow(() -> new UserNotFoundException(rentalDTO.getUser().getId()));
+            existing.setUser(user);
+            rentalDTO.setUser(userMapper.toDTO(user));
+        }
+
+        if (rentalDTO.getCar() != null && rentalDTO.getCar().getId() != null &&
+                !rentalDTO.getCar().getId().equals(existing.getCar().getId())) {
+            Car car = carRepository.findById(rentalDTO.getCar().getId())
+                    .orElseThrow(() -> new CarNotFoundException(rentalDTO.getCar().getId()));
+            existing.setCar(car);
+            rentalDTO.setCar(carMapper.toDTO(car));
+            needsPriceRecalculation = true;
+        }
+
+        if (rentalDTO.getStartDate() != null && !rentalDTO.getStartDate().equals(existing.getStartDate())) {
+            existing.setStartDate(rentalDTO.getStartDate());
+            needsPriceRecalculation = true;
+        }
+        if (rentalDTO.getEndDate() != null && !rentalDTO.getEndDate().equals(existing.getEndDate())) {
+            existing.setEndDate(rentalDTO.getEndDate());
+            needsPriceRecalculation = true;
+        }
+
         setIfNotNull(rentalDTO::getIsPaid, existing::setIsPaid);
 
-        RentalDTO updatedDTO = rentalMapper.toDTO(existing);
-        validateNewRental(updatedDTO);
+        if (needsPriceRecalculation) {
+            long rentalDays = ChronoUnit.DAYS.between(existing.getStartDate(), existing.getEndDate());
+            if (rentalDays <= 0) {
+                throw new RentalCreationException("Rental period must be at least 1 day.");
+            }
+
+            BigDecimal totalPrice = existing.getCar().getRentalPrice().multiply(BigDecimal.valueOf(rentalDays));
+            existing.setTotalPrice(totalPrice);
+            logger.info("Recalculated total price: {}", totalPrice);
+        }
 
         Rental updated = rentalRepository.save(existing);
         logger.info("Rental with ID {} updated successfully", id);

@@ -3,6 +3,7 @@ package com.rental.CarRentalShop.dto;
 import lombok.Builder;
 import lombok.Data;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 
 @Data
@@ -14,4 +15,5 @@ public class RentalDTO {
     private LocalDate startDate;
     private LocalDate endDate;
     private Boolean isPaid;
+    private BigDecimal totalPrice;
 }
