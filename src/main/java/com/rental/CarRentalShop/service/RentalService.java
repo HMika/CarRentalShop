@@ -22,8 +22,6 @@ import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
-import java.util.function.Consumer;
-import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 @Service
@@ -52,14 +50,6 @@ public class RentalService {
         this.carMapper = carMapper;
         this.carRepository = carRepository;
         this.userRepository = userRepository;
-    }
-
-
-    private static <T> void setIfNotNull(Supplier<T> getter, Consumer<T> setter) {
-        T value = getter.get();
-        if (value != null) {
-            setter.accept(value);
-        }
     }
 
     /**
@@ -96,7 +86,7 @@ public class RentalService {
     public RentalDTO createRental(RentalDTO rentalDTO) {
         logger.info("Creating a new rental");
 
-        validateNewRental(rentalDTO);
+        validateNewRental(rentalDTO, null);  // Pass null for new rental creation
 
         try {
             Car car = carRepository.findById(rentalDTO.getCar().getId())
@@ -139,8 +129,6 @@ public class RentalService {
         Rental existing = rentalRepository.findById(id)
                 .orElseThrow(() -> new RentalNotFoundException(id));
 
-        boolean needsPriceRecalculation = false;
-
         if (rentalDTO.getUser() != null && rentalDTO.getUser().getId() != null) {
             User user = userRepository.findById(rentalDTO.getUser().getId())
                     .orElseThrow(() -> new UserNotFoundException(rentalDTO.getUser().getId()));
@@ -154,30 +142,23 @@ public class RentalService {
                     .orElseThrow(() -> new CarNotFoundException(rentalDTO.getCar().getId()));
             existing.setCar(car);
             rentalDTO.setCar(carMapper.toDTO(car));
-            needsPriceRecalculation = true;
         }
 
-        if (rentalDTO.getStartDate() != null && !rentalDTO.getStartDate().equals(existing.getStartDate())) {
+        if (rentalDTO.getStartDate() != null) {
             existing.setStartDate(rentalDTO.getStartDate());
-            needsPriceRecalculation = true;
         }
-        if (rentalDTO.getEndDate() != null && !rentalDTO.getEndDate().equals(existing.getEndDate())) {
+        if (rentalDTO.getEndDate() != null) {
             existing.setEndDate(rentalDTO.getEndDate());
-            needsPriceRecalculation = true;
         }
 
-        setIfNotNull(rentalDTO::getIsPaid, existing::setIsPaid);
+        validateNewRental(rentalMapper.toDTO(existing), id);
 
-        if (needsPriceRecalculation) {
-            long rentalDays = ChronoUnit.DAYS.between(existing.getStartDate(), existing.getEndDate());
-            if (rentalDays <= 0) {
-                throw new RentalCreationException("Rental period must be at least 1 day.");
-            }
-
-            BigDecimal totalPrice = existing.getCar().getRentalPrice().multiply(BigDecimal.valueOf(rentalDays));
-            existing.setTotalPrice(totalPrice);
-            logger.info("Recalculated total price: {}", totalPrice);
+        long rentalDays = ChronoUnit.DAYS.between(existing.getStartDate(), existing.getEndDate());
+        if (rentalDays <= 0) {
+            throw new RentalCreationException("Rental period must be at least 1 day.");
         }
+        BigDecimal totalPrice = existing.getCar().getRentalPrice().multiply(BigDecimal.valueOf(rentalDays));
+        existing.setTotalPrice(totalPrice);
 
         Rental updated = rentalRepository.save(existing);
         logger.info("Rental with ID {} updated successfully", id);
@@ -226,11 +207,12 @@ public class RentalService {
         return rentals;
     }
 
-    private void validateNewRental(RentalDTO rentalDTO) {
+    private void validateNewRental(RentalDTO rentalDTO, Long rentalId) {
         if (rentalDTO.getStartDate() == null || rentalDTO.getEndDate() == null) {
             logger.error("StartDate or EndDate is null");
             throw new RentalCreationException("Rental dates cannot be null");
         }
+
         if (rentalDTO.getStartDate().isAfter(rentalDTO.getEndDate())) {
             logger.error("StartDate {} is after EndDate {}",
                     rentalDTO.getStartDate(), rentalDTO.getEndDate());
@@ -244,17 +226,17 @@ public class RentalService {
                 rentalDTO.getEndDate()
         );
 
-        if (rentalDTO.getId() != null) {
-            overlappingCarRentals.removeIf(r -> r.getId().equals(rentalDTO.getId()));
-        }
 
-        if (!overlappingCarRentals.isEmpty()) {
-            logger.error("Car with ID {} is not available between {} and {}",
-                    carId, rentalDTO.getStartDate(), rentalDTO.getEndDate());
+        List<Rental> filteredRentals = overlappingCarRentals.stream()
+                .filter(r -> rentalId == null || !r.getId().equals(rentalId))
+                .collect(Collectors.toList());
+
+        if (!filteredRentals.isEmpty()) {
+            logger.error("Car with ID {} is not available between {} and {}", carId, rentalDTO.getStartDate(), rentalDTO.getEndDate());
             throw new RentalCreationException("Car is not available for the selected dates.");
         }
 
-        logger.info("Validation passed for rental: car={}, {} -> {}",
-                carId, rentalDTO.getStartDate(), rentalDTO.getEndDate());
+        logger.info("Validation passed for rental: car={}, {} -> {}", carId, rentalDTO.getStartDate(), rentalDTO.getEndDate());
+
     }
 }

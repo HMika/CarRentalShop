@@ -23,6 +23,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.annotation.DirtiesContext;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
@@ -100,6 +101,7 @@ public class RentalServiceIntegrationTest {
                 .startDate(LocalDate.of(2024, 3, 1))
                 .endDate(LocalDate.of(2024, 3, 7))
                 .isPaid(true)
+                .totalPrice(new BigDecimal("100.00"))
                 .build();
         rentalRepository.save(rental);
 
@@ -125,6 +127,7 @@ public class RentalServiceIntegrationTest {
                 .startDate(LocalDate.of(2024, 3, 1))
                 .endDate(LocalDate.of(2024, 3, 7))
                 .isPaid(true)
+                .totalPrice(new BigDecimal("100.00"))
                 .build();
         rentalRepository.save(rental);
 
@@ -148,6 +151,7 @@ public class RentalServiceIntegrationTest {
                 .startDate(LocalDate.of(2024, 3, 1))
                 .endDate(LocalDate.of(2024, 3, 7))
                 .isPaid(true)
+                .totalPrice(new BigDecimal("100.00"))
                 .build();
         rentalRepository.save(rental1);
 
@@ -157,6 +161,7 @@ public class RentalServiceIntegrationTest {
                 .startDate(LocalDate.of(2024, 3, 10))
                 .endDate(LocalDate.of(2024, 3, 15))
                 .isPaid(false)
+                .totalPrice(new BigDecimal("100.00"))
                 .build();
         rentalRepository.save(rental2);
 
@@ -200,19 +205,19 @@ public class RentalServiceIntegrationTest {
                 .startDate(LocalDate.of(2024, 3, 1))
                 .endDate(LocalDate.of(2024, 3, 5))
                 .isPaid(true)
+                .totalPrice(new BigDecimal("100.00"))
                 .build();
         rentalRepository.save(existingRental);
 
-        // Attempt new rental that overlaps partially with the first
         RentalDTO overlappingDTO = RentalDTO.builder()
                 .user(userMapper.toDTO(existingUser))
                 .car(carMapper.toDTO(existingCar))
                 .startDate(LocalDate.of(2024, 3, 3)) // Overlaps
                 .endDate(LocalDate.of(2024, 3, 6))
                 .isPaid(false)
+                .totalPrice(new BigDecimal("100.00"))
                 .build();
 
-        // Expecting a car unavailable exception
         assertThatThrownBy(() -> rentalService.createRental(overlappingDTO))
                 .isInstanceOf(RentalCreationException.class)
                 .hasMessageContaining("Car is not available");
@@ -232,6 +237,7 @@ public class RentalServiceIntegrationTest {
                 .startDate(LocalDate.of(2024, 3, 1))
                 .endDate(LocalDate.of(2024, 3, 5))
                 .isPaid(true)
+                .totalPrice(new BigDecimal("100.00"))
                 .build();
         RentalDTO createdRental = rentalService.createRental(rentalDTO);
 
@@ -241,6 +247,7 @@ public class RentalServiceIntegrationTest {
                 .startDate(LocalDate.of(2024, 3, 6))
                 .endDate(LocalDate.of(2024, 3, 10))
                 .isPaid(false)
+                .totalPrice(new BigDecimal("100.00"))
                 .build();
         rentalService.createRental(secondRentalDTO);
 
