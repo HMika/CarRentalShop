@@ -9,4 +9,5 @@ public class UserLoginResponse {
     private Long userId;
     private String username;
     private String message;
+    private String token;
 }
