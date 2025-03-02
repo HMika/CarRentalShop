@@ -41,6 +41,7 @@ public class UserService {
                 .map(userMapper::toDTO)
                 .collect(Collectors.toList());
         logger.info("Retrieved {} users", users.size());
+        users.forEach(user -> user.setPassword("*******"));
         return users;
     }
 
@@ -53,6 +54,7 @@ public class UserService {
                 });
 
         logger.info("User found: {}", user.getUsername());
+        user.setPassword("*******");
         return userMapper.toDTO(user);
     }
 
@@ -65,6 +67,7 @@ public class UserService {
                 });
 
         logger.info("User found: {}", user.getUsername());
+        user.setPassword("*******");
         return userMapper.toDTO(user);
     }
 
@@ -109,6 +112,7 @@ public class UserService {
 
         User updatedUser = userRepository.save(existingUser);
         logger.info("User with ID {} updated successfully", id);
+        updatedUser.setPassword("*******");
         return userMapper.toDTO(updatedUser);
     }
 
