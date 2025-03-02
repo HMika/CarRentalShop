@@ -28,8 +28,9 @@ public class UserLoginService {
             throw new UserNotFoundException("Invalid username or password");
         }
 
-        // Generate JWT token
-        String token = jwtUtil.generateToken(user.getUsername());
+        String role = user.getRole().getRoleName();
+
+        String token = jwtUtil.generateToken(user.getUsername(), role);
 
         return new UserLoginResponse(user.getId(), user.getUsername(), "Login successful", token);
     }
