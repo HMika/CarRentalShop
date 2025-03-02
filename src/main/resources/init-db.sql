@@ -51,11 +51,16 @@ VALUES ('User'),
        ('Admin');
 
 INSERT INTO Users (Username, Name, Surname, Password, ContactInfo, RoleID)
-VALUES ('john_doe', 'John', 'Doe', 'password123', 'john.doe@example.com', 1),
-       ('jane_smith', 'Jane', 'Smith', 'securepass', 'jane.smith@example.com', 1),
-       ('admin_user', 'Admin', 'User', 'adminpass', 'admin@example.com', 2),
-       ('michael_b', 'Michael', 'Brown', 'michaelpass', 'michael.b@example.com', 1),
-       ('sarah_w', 'Sarah', 'White', 'sarahpass', 'sarah.w@example.com', 1);
+VALUES ('john_doe', 'John', 'Doe', '$2a$10$Sq.qqT1jPy4x/RwcvEVl1e02TOprldvMs0uRnmokxsTmhZb79wBRa',
+        'john.doe@example.com', 1),
+       ('jane_smith', 'Jane', 'Smith', '$2a$10$fnXiL8QOfq0N9TnCAR7PZO9V1Yhtp81gqTu7RdWBIAZyRQLC6Dj/m',
+        'jane.smith@example.com', 1),
+       ('admin_user', 'Admin', 'User', '$2a$10$hMz7zAe4dUaxK1klh6lveumdr5KSDploE/.qvN78.4qaAXrbBL5u2',
+        'admin@example.com', 2),
+       ('michael_b', 'Michael', 'Brown', '$2a$10$F7LQV4WLB6n0opfpjy6gZeAlAO8U9trQjx.DHs96FgS8MAFYFB0Ou',
+        'michael.b@example.com', 1),
+       ('sarah_w', 'Sarah', 'White', '$2a$10$7DhDmjJAk.1.i70e.DpM3uyQ.sLhZn/9dFEjzha4AVg68gz7UbHh2',
+        'sarah.w@example.com', 1);
 
 INSERT INTO Cars (Make, Model, Year, RegistrationNumber, RentalPrice)
 VALUES ('Toyota', 'Corolla', 2020, 'ABC123', 50.00),
