@@ -5,6 +5,7 @@ import com.rental.CarRentalShop.service.CarService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -20,6 +21,7 @@ public class CarController {
     }
 
     @GetMapping
+    @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
     public ResponseEntity<List<CarDTO>> getAllCars() {
         logger.info("Fetching all cars.");
         List<CarDTO> cars = carService.getAllCars();
@@ -27,6 +29,7 @@ public class CarController {
     }
 
     @GetMapping("/{id}")
+    @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
     public ResponseEntity<CarDTO> getCarById(@PathVariable Long id) {
         logger.info("Fetching car with ID: {}", id);
         CarDTO car = carService.getCarById(id);
@@ -34,6 +37,7 @@ public class CarController {
     }
 
     @PostMapping
+    @PreAuthorize("hasAnyRole('ADMIN')")
     public ResponseEntity<CarDTO> createCar(@RequestBody CarDTO carDTO) {
         logger.info("Creating new car: {}", carDTO);
         CarDTO createdCar = carService.createCar(carDTO);
@@ -41,6 +45,7 @@ public class CarController {
     }
 
     @PutMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN')")
     public ResponseEntity<CarDTO> updateCar(@PathVariable Long id, @RequestBody CarDTO carDTO) {
         logger.info("Updating car with ID: {}", id);
         CarDTO updatedCar = carService.updateCar(id, carDTO);
@@ -48,6 +53,7 @@ public class CarController {
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN')")
     public ResponseEntity<Void> deleteCar(@PathVariable Long id) {
         logger.info("Deleting car with ID: {}", id);
         carService.deleteCar(id);
