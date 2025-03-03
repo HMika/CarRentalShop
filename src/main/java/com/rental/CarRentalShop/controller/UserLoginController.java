@@ -6,6 +6,7 @@ import com.rental.CarRentalShop.security.JwtUtil;
 import com.rental.CarRentalShop.service.UserLoginService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
@@ -23,12 +24,14 @@ public class UserLoginController {
     }
 
     @PostMapping("/login")
+    @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
     public ResponseEntity<UserLoginResponse> login(@RequestBody UserLoginRequest request) {
         UserLoginResponse response = userLoginService.authenticateUser(request);
         return ResponseEntity.ok(response);
     }
 
     @GetMapping("/validate")
+    @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
     public ResponseEntity<String> validateToken(@RequestHeader("Authorization") String token) {
         if (token == null || !token.startsWith("Bearer ")) {
             return ResponseEntity.badRequest().body("Invalid token format");
@@ -45,6 +48,7 @@ public class UserLoginController {
     }
 
     @PostMapping("/logout")
+    @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
     public ResponseEntity<String> logout(@RequestHeader("Authorization") String token) {
         if (token == null || !token.startsWith("Bearer ")) {
             return ResponseEntity.badRequest().body("Invalid token format");
@@ -62,6 +66,7 @@ public class UserLoginController {
     }
 
     @PostMapping("/logout-user")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<String> logoutByUsername(@RequestBody Map<String, String> request) {
         String username = request.get("username");
 
@@ -74,6 +79,7 @@ public class UserLoginController {
     }
 
     @PostMapping("/logout-all")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<String> logoutAllUsers() {
         jwtUtil.revokeAllTokens();
         return ResponseEntity.ok("All users have been logged out, all tokens revoked.");
