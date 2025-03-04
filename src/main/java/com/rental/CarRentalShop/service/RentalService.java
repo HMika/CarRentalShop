@@ -62,6 +62,7 @@ public class RentalService {
                 .map(rentalMapper::toDTO)
                 .collect(Collectors.toList());
         logger.info("Retrieved {} rentals", rentals.size());
+        rentals.forEach(rental -> rental.getUser().setPassword("*******"));
         return rentals;
     }
 
@@ -76,6 +77,7 @@ public class RentalService {
                     return new RentalNotFoundException(id);
                 });
         logger.info("Found rental with ID: {}", id);
+        rental.getUser().setPassword("*******");
         return rentalMapper.toDTO(rental);
     }
 
@@ -113,6 +115,7 @@ public class RentalService {
 
             Rental savedRental = rentalRepository.save(rentalEntity);
             logger.info("Successfully created rental with ID: {} and total price: {}", savedRental.getId(), totalPrice);
+            savedRental.getUser().setPassword("*******");
             return rentalMapper.toDTO(savedRental);
         } catch (Exception ex) {
             logger.error("Failed to create rental: {}", ex.getMessage());
@@ -162,6 +165,7 @@ public class RentalService {
 
         Rental updated = rentalRepository.save(existing);
         logger.info("Rental with ID {} updated successfully", id);
+        updated.getUser().setPassword("*******");
         return rentalMapper.toDTO(updated);
     }
 
@@ -191,6 +195,7 @@ public class RentalService {
                 .map(rentalMapper::toDTO)
                 .collect(Collectors.toList());
         logger.info("Found {} rentals for user ID: {}", rentals.size(), userId);
+        rentals.forEach(rental -> rental.getUser().setPassword("*******"));
         return rentals;
     }
 
@@ -204,6 +209,7 @@ public class RentalService {
                 .map(rentalMapper::toDTO)
                 .collect(Collectors.toList());
         logger.info("Found {} rentals for car ID: {}", rentals.size(), carId);
+        rentals.forEach(rental -> rental.getUser().setPassword("*******"));
         return rentals;
     }
 
@@ -229,7 +235,7 @@ public class RentalService {
 
         List<Rental> filteredRentals = overlappingCarRentals.stream()
                 .filter(r -> rentalId == null || !r.getId().equals(rentalId))
-                .collect(Collectors.toList());
+                .toList();
 
         if (!filteredRentals.isEmpty()) {
             logger.error("Car with ID {} is not available between {} and {}", carId, rentalDTO.getStartDate(), rentalDTO.getEndDate());
