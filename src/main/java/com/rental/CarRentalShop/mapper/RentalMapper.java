@@ -26,6 +26,7 @@ public class RentalMapper {
                 .startDate(rental.getStartDate())
                 .endDate(rental.getEndDate())
                 .isPaid(rental.getIsPaid())
+                .totalPrice(rental.getTotalPrice())
                 .build();
     }
 
@@ -39,6 +40,7 @@ public class RentalMapper {
                 .startDate(rentalDTO.getStartDate())
                 .endDate(rentalDTO.getEndDate())
                 .isPaid(rentalDTO.getIsPaid())
+                .totalPrice(rentalDTO.getTotalPrice())
                 .build();
     }
 }

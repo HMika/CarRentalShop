@@ -10,6 +10,7 @@ import com.rental.CarRentalShop.repository.UserRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -23,12 +24,14 @@ public class UserService {
     private final UserRepository userRepository;
     private final UserMapper userMapper;
     private final RoleMapper roleMapper;
+    private final PasswordEncoder passwordEncoder;
 
     @Autowired
-    public UserService(UserRepository userRepository, UserMapper userMapper, RoleMapper roleMapper) {
+    public UserService(UserRepository userRepository, UserMapper userMapper, RoleMapper roleMapper, PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
         this.userMapper = userMapper;
         this.roleMapper = roleMapper;
+        this.passwordEncoder = passwordEncoder;
     }
 
     public List<UserDTO> getAllUsers() {
@@ -38,6 +41,7 @@ public class UserService {
                 .map(userMapper::toDTO)
                 .collect(Collectors.toList());
         logger.info("Retrieved {} users", users.size());
+        users.forEach(user -> user.setPassword("*******"));
         return users;
     }
 
@@ -50,6 +54,7 @@ public class UserService {
                 });
 
         logger.info("User found: {}", user.getUsername());
+        user.setPassword("*******");
         return userMapper.toDTO(user);
     }
 
@@ -62,6 +67,7 @@ public class UserService {
                 });
 
         logger.info("User found: {}", user.getUsername());
+        user.setPassword("*******");
         return userMapper.toDTO(user);
     }
 
@@ -74,14 +80,18 @@ public class UserService {
             throw new UserAlreadyExistsException(userDTO.getUsername());
         }
 
+        // Hash the password before storing
+        userDTO.setPassword(passwordEncoder.encode(userDTO.getPassword()));
+
         User user = userMapper.toEntity(userDTO);
         User savedUser = userRepository.save(user);
         logger.info("User created successfully with ID: {}", savedUser.getId());
+        savedUser.setPassword("*******");
         return userMapper.toDTO(savedUser);
     }
 
     public UserDTO updateUser(Long id, UserDTO userDTO) {
-        logger.info("Updating existingUser with ID: {}", id);
+        logger.info("Updating user with ID: {}", id);
 
         User existingUser = userRepository.findById(id)
                 .orElseThrow(() -> {
@@ -93,11 +103,17 @@ public class UserService {
         existingUser.setName(userDTO.getName());
         existingUser.setSurname(userDTO.getSurname());
         existingUser.setContactInfo(userDTO.getContactInfo());
-        existingUser.setPassword(userDTO.getPassword());
         existingUser.setRole(roleMapper.toEntity(userDTO.getRole()));
+
+        // Only update the password if a new one is provided
+        if (userDTO.getPassword() != null && !userDTO.getPassword().isEmpty()) {
+            logger.info("Updating password for user ID: {}", id);
+            existingUser.setPassword(passwordEncoder.encode(userDTO.getPassword()));
+        }
 
         User updatedUser = userRepository.save(existingUser);
         logger.info("User with ID {} updated successfully", id);
+        updatedUser.setPassword("*******");
         return userMapper.toDTO(updatedUser);
     }
 
