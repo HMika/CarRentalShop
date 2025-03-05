@@ -68,32 +68,45 @@ These tables define relationships between **users, roles, cars, and rental trans
 
 ---
 
-# 🚀 Startup Guide
+## Car Rental Shop Application – Startup Guide
 
-## 📌 Prerequisites
-Before running the application, ensure that you have the following installed:
+### Prerequisites
+Before running the application, ensure that you have the following tools installed and configured:
 
-### **1️⃣ Install Docker**
-The application uses **PostgreSQL** as its database inside a **Docker container**.  
-🔗 [Download Docker](https://www.docker.com/get-started)
-## 3️⃣ Install Java & Maven
+### 1. Install Docker
+The application uses PostgreSQL as its database, which will run inside a Docker container. Ensure Docker is installed:
+- Download and install Docker for your operating system.
 
-The backend application requires **Java 17+** and **Maven**.
-
-### Install Java
-- Install **JDK 17+**:
-  - 🔗 [Download JDK](https://adoptium.net/)
-- Verify installation:
-  ```sh
-  java -version
-### **2️⃣ Install Docker Compose**
-Docker Compose is required to manage the database container.
+### 2. Install Docker Compose
+The database container is managed using Docker Compose.
+- Docker Compose should be installed along with Docker.
 - To verify installation, run:
+
   ```sh
   docker-compose --version
+  ```
 
-SOME TEXT
+### 3. Install Java & Maven
+The backend application is built using Java 17+ and Maven.
 
+- Install Java Development Kit (JDK 17+)
+- Install Maven:
+
+#### On Linux/macOS:
+
+```sh
+sudo apt install maven  # Debian-based
+brew install maven      # macOS
+```
+
+#### On Windows:
+Download from Apache Maven and configure the PATH variable.
+
+#### Verify installation:
+
+```sh
+java -version
+mvn -version
 
 ## Step-by-Step Guide to Start the Application
 
