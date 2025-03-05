@@ -91,3 +91,84 @@ Docker Compose is required to manage the database container.
 - To verify installation, run:
   ```sh
   docker-compose --version
+
+SOME TEXT
+
+
+## Step-by-Step Guide to Start the Application
+
+### 1. Clone the Repository
+First, clone the project repository from your source control (GitHub, GitLab, etc.):
+
+```sh
+git clone https://github.com/your-repository/car-rental-shop.git
+cd car-rental-shop
+```
+
+## Start the Database with Docker
+The project includes a `docker-compose.yml` file that sets up the PostgreSQL database inside a Docker container.
+
+### Steps:
+1. Navigate to the project directory.
+2. Run the following command to start the database container:
+
+   ```sh
+   docker-compose up -d
+   ```
+   This will:
+   - Pull the PostgreSQL image (if not already downloaded).
+   - Create and start a database container with the required configuration.
+   - Run the database in detached mode (`-d` flag) in the background.
+
+3. Verify that the container is running:
+   
+   ```sh
+   docker ps
+   ```
+   You should see a running PostgreSQL container.
+
+## Configure Database Connection
+The application uses an `application.properties` file to define database connection settings. Ensure that the connection details match the database container configuration.
+
+The default settings in `src/main/resources/application.properties` should be:
+
+```ini
+spring.datasource.url=jdbc:postgresql://localhost:5432/carrent_db
+spring.datasource.username=your_db_user
+spring.datasource.password=your_db_password
+spring.datasource.driver-class-name=org.postgresql.Driver
+
+spring.jpa.database=POSTGRESQL
+spring.jpa.hibernate.ddl-auto=update
+spring.jpa.properties.hibernate.format_sql=true
+```
+
+If necessary, update the username and password to match the credentials defined in your `docker-compose.yml` file.
+
+## Build the Application
+Once the database is running, you need to build the project using Maven.
+
+Run the following command inside the project root directory:
+
+```sh
+mvn clean install
+```
+
+This will:
+- Download all dependencies.
+- Compile the Java source code.
+- Run tests (optional).
+- Package the application into a `.jar` file.
+
+## Start the Backend Application
+After building the project, start the backend service using:
+
+```sh
+mvn spring-boot:run
+```
+
+or run the compiled JAR file manually:
+
+```sh
+java -jar target/car-rental-shop.jar
+```
