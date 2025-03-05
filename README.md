@@ -76,7 +76,16 @@ Before running the application, ensure that you have the following installed:
 ### **1️⃣ Install Docker**
 The application uses **PostgreSQL** as its database inside a **Docker container**.  
 🔗 [Download Docker](https://www.docker.com/get-started)
+## 3️⃣ Install Java & Maven
 
+The backend application requires **Java 17+** and **Maven**.
+
+### Install Java
+- Install **JDK 17+**:
+  - 🔗 [Download JDK](https://adoptium.net/)
+- Verify installation:
+  ```sh
+  java -version
 ### **2️⃣ Install Docker Compose**
 Docker Compose is required to manage the database container.
 - To verify installation, run:
