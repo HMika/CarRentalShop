@@ -1,0 +1,120 @@
+openapi: "3.0.3"
+info:
+  title: "CarRentalShop API"
+  description: "CarRentalShop API"
+  version: "1.0.0"
+servers:
+  - url: "https://CarRentalShop"
+paths:
+  /api/cars:
+    get:
+      summary: "GET api/cars"
+      operationId: "getAllCars"
+      responses:
+        "200":
+          description: "OK"
+          content:
+            '*/*':
+              schema:
+                type: "array"
+                items:
+                  $ref: "#/components/schemas/CarDTO"
+    post:
+      summary: "POST api/cars"
+      operationId: "createCar"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CarDTO"
+        required: true
+      responses:
+        "200":
+          description: "OK"
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/CarDTO"
+  /api/cars/{id}:
+    get:
+      summary: "GET api/cars/{id}"
+      operationId: "getCarById"
+      parameters:
+        - name: "id"
+          in: "path"
+          required: true
+          schema:
+            type: "integer"
+            format: "int64"
+      responses:
+        "200":
+          description: "OK"
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/CarDTO"
+    put:
+      summary: "PUT api/cars/{id}"
+      operationId: "updateCar"
+      parameters:
+        - name: "id"
+          in: "path"
+          required: true
+          schema:
+            type: "integer"
+            format: "int64"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CarDTO"
+        required: true
+      responses:
+        "200":
+          description: "OK"
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/CarDTO"
+    delete:
+      summary: "DELETE api/cars/{id}"
+      operationId: "deleteCar"
+      parameters:
+        - name: "id"
+          in: "path"
+          required: true
+          schema:
+            type: "integer"
+            format: "int64"
+      responses:
+        "200":
+          description: "OK"
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/Void"
+components:
+  schemas:
+    BigDecimal:
+      type: "object"
+      properties: { }
+    CarDTO:
+      type: "object"
+      properties:
+        id:
+          type: "integer"
+          format: "int64"
+        make:
+          type: "string"
+        model:
+          type: "string"
+        year:
+          type: "integer"
+          format: "int32"
+        registrationNumber:
+          type: "string"
+        rentalPrice:
+          $ref: "#/components/schemas/BigDecimal"
+    Void:
+      type: "object"
+      properties: { }

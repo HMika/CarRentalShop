@@ -1,0 +1,108 @@
+openapi: "3.0.3"
+info:
+  title: "CarRentalShop API"
+  description: "CarRentalShop API"
+  version: "1.0.0"
+servers:
+  - url: "https://CarRentalShop"
+paths:
+  /api/auth/login:
+    post:
+      summary: "POST api/auth/login"
+      operationId: "login"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UserLoginRequest"
+        required: true
+      responses:
+        "200":
+          description: "OK"
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/UserLoginResponse"
+  /api/auth/validate:
+    get:
+      summary: "GET api/auth/validate"
+      operationId: "validateToken"
+      parameters:
+        - name: "Authorization"
+          in: "header"
+          required: true
+          schema:
+            type: "string"
+      responses:
+        "200":
+          description: "OK"
+          content:
+            '*/*':
+              schema:
+                type: "string"
+  /api/auth/logout:
+    post:
+      summary: "POST api/auth/logout"
+      operationId: "logout"
+      parameters:
+        - name: "Authorization"
+          in: "header"
+          required: true
+          schema:
+            type: "string"
+      responses:
+        "200":
+          description: "OK"
+          content:
+            '*/*':
+              schema:
+                type: "string"
+  /api/auth/logout-user:
+    post:
+      summary: "POST api/auth/logout-user"
+      operationId: "logoutByUsername"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: "string"
+        required: true
+      responses:
+        "200":
+          description: "OK"
+          content:
+            '*/*':
+              schema:
+                type: "string"
+  /api/auth/logout-all:
+    post:
+      summary: "POST api/auth/logout-all"
+      operationId: "logoutAllUsers"
+      responses:
+        "200":
+          description: "OK"
+          content:
+            '*/*':
+              schema:
+                type: "string"
+components:
+  schemas:
+    UserLoginRequest:
+      type: "object"
+      properties:
+        username:
+          type: "string"
+        password:
+          type: "string"
+    UserLoginResponse:
+      type: "object"
+      properties:
+        userId:
+          type: "integer"
+          format: "int64"
+        username:
+          type: "string"
+        message:
+          type: "string"
+        token:
+          type: "string"
