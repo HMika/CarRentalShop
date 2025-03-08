@@ -65,6 +65,7 @@ The application database consists of the following tables:
 4️⃣ **Rentals** – Stores rental transaction details.  
 
 These tables define relationships between **users, roles, cars, and rental transactions**.
+<img width="517" alt="Screenshot 2025-03-08 at 12 54 01" src="https://github.com/user-attachments/assets/fb109efe-88b3-4f5e-bce1-6ee630c75700" />
 
 ---
 
