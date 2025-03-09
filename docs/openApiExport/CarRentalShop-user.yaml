@@ -1,0 +1,187 @@
+openapi: "3.0.3"
+info:
+  title: "CarRentalShop API"
+  description: "CarRentalShop API"
+  version: "1.0.0"
+servers:
+  - url: "https://CarRentalShop"
+paths:
+  /api/users:
+    get:
+      summary: "GET api/users"
+      operationId: "getAllUsers"
+      responses:
+        "200":
+          description: "OK"
+          content:
+            '*/*':
+              schema:
+                type: "array"
+                items:
+                  $ref: "#/components/schemas/UserDTO"
+    post:
+      summary: "POST api/users"
+      operationId: "createUser"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UserDTO"
+        required: true
+      responses:
+        "200":
+          description: "OK"
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/UserDTO"
+  /api/users/{id}:
+    get:
+      summary: "GET api/users/{id}"
+      operationId: "getUserById"
+      parameters:
+        - name: "id"
+          in: "path"
+          required: true
+          schema:
+            type: "integer"
+            format: "int64"
+      responses:
+        "200":
+          description: "OK"
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/UserDTO"
+    put:
+      summary: "PUT api/users/{id}"
+      operationId: "updateUser"
+      parameters:
+        - name: "id"
+          in: "path"
+          required: true
+          schema:
+            type: "integer"
+            format: "int64"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UserDTO"
+        required: true
+      responses:
+        "200":
+          description: "OK"
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/UserDTO"
+    delete:
+      summary: "DELETE api/users/{id}"
+      operationId: "deleteUser"
+      parameters:
+        - name: "id"
+          in: "path"
+          required: true
+          schema:
+            type: "integer"
+            format: "int64"
+      responses:
+        "200":
+          description: "OK"
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/Void"
+  /api/users/username/{username}:
+    get:
+      summary: "GET api/users/username/{username}"
+      operationId: "getUserByUsername"
+      parameters:
+        - name: "username"
+          in: "path"
+          required: true
+          schema:
+            type: "string"
+      responses:
+        "200":
+          description: "OK"
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/UserDTO"
+components:
+  schemas:
+    RoleDTO:
+      type: "object"
+      properties:
+        id:
+          type: "integer"
+          format: "int64"
+        roleName:
+          type: "string"
+    BigDecimal:
+      type: "object"
+      properties: { }
+    CarDTO:
+      type: "object"
+      properties:
+        id:
+          type: "integer"
+          format: "int64"
+        make:
+          type: "string"
+        model:
+          type: "string"
+        year:
+          type: "integer"
+          format: "int32"
+        registrationNumber:
+          type: "string"
+        rentalPrice:
+          $ref: "#/components/schemas/BigDecimal"
+    RentalDTO:
+      type: "object"
+      properties:
+        id:
+          type: "integer"
+          format: "int64"
+        user:
+          $ref: "#/components/schemas/UserDTO"
+        car:
+          $ref: "#/components/schemas/CarDTO"
+        startDate:
+          type: "string"
+          format: "date"
+        endDate:
+          type: "string"
+          format: "date"
+        isPaid:
+          type: "boolean"
+        totalPrice:
+          $ref: "#/components/schemas/BigDecimal"
+    UserDTO:
+      type: "object"
+      properties:
+        id:
+          type: "integer"
+          format: "int64"
+        username:
+          type: "string"
+        name:
+          type: "string"
+        surname:
+          type: "string"
+        contactInfo:
+          type: "string"
+        password:
+          type: "string"
+        role:
+          $ref: "#/components/schemas/RoleDTO"
+        rentals:
+          type: "array"
+          items:
+            $ref: "#/components/schemas/RentalDTO"
+    Void:
+      type: "object"
+      properties: { }
